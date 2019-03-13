@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import Home from './views/Home.vue';
+// import Home from './views/Home.vue';
 import SplashScreen from './views/Splashscreen.vue';
 
 Vue.use(Router);
@@ -17,7 +17,8 @@ export default new Router({
 		{
 			path: '/home',
 			name: 'home',
-			component: Home
+			// component: Home
+			component: () => import(/* webpackChunkName: "home" */ './views/Home.vue')
 		},
 		{
 			path: '/about',
