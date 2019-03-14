@@ -5,241 +5,27 @@
         <span class="title primary--text">ADMIN'S LOUNGE</span>
       </div>
       <div class="body">
-        <v-card width="290">
-          <v-card-title class="pb-0">
-            <span>Category</span>
-            <v-spacer></v-spacer>
-            <span class="light-grey">1.2 million votes</span>
-          </v-card-title>
+        <Category
+          v-for="(category, index) of categories"
+          :category="category"
+          :key="'category' + index"
+          :ikey="'category' + index"
+          @clicked="clicked"
+        />
 
-          <v-list three-line>
-            <template v-for="(item, index) in items">
-              <v-list-tile :key="item.title" avatar ripple @click="toggle(index)">
-                <v-list-tile-avatar>
-                  <img src="https://cdn.vuetifyjs.com/images/lists/5.jpg">
-                </v-list-tile-avatar>
-
-                <v-list-tile-content>
-                  <v-list-tile-sub-title class="text--primary">James Wilkens</v-list-tile-sub-title>
-                  <v-list-tile-sub-title class="text--primary">PartyA</v-list-tile-sub-title>
-                  <v-list-tile-sub-title class="green-text">23%</v-list-tile-sub-title>
-                </v-list-tile-content>
-
-                <v-list-tile-action>
-                  <v-icon class="item-icons" color="error">highlight_off</v-icon>
-                  <v-icon class="item-icons" color="grey">settings</v-icon>
-                  <v-list-tile-action-text>400,000 votes</v-list-tile-action-text>
-                </v-list-tile-action>
-              </v-list-tile>
-              <v-divider v-if="index + 1 < items.length" :key="index"></v-divider>
-            </template>
-
-            <v-list-tile class="add-button">
-              <v-list-tile-action>
-                <!-- <v-list-tile-title>ADD CANDIDATE</v-list-tile-title> -->
-                <v-btn flat large color="primary">ADD CANDIDATE</v-btn>
-              </v-list-tile-action>
-            </v-list-tile>
-          </v-list>
-
-          <v-card-actions>
-            <v-btn flat icon color="error">
-              <v-icon>highlight_off</v-icon>
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-
-        <v-card width="290">
-          <v-card-title class="pb-0">
-            <span>Category</span>
-            <v-spacer></v-spacer>
-            <span class="light-grey">1.2 million votes</span>
-          </v-card-title>
-
-          <v-list three-line>
-            <template v-for="(item, index) in items">
-              <v-list-tile :key="item.title" avatar ripple @click="toggle(index)">
-                <v-list-tile-avatar>
-                  <img src="https://cdn.vuetifyjs.com/images/lists/5.jpg">
-                </v-list-tile-avatar>
-
-                <v-list-tile-content>
-                  <v-list-tile-sub-title class="text--primary">James Wilkens</v-list-tile-sub-title>
-                  <v-list-tile-sub-title class="text--primary">PartyA</v-list-tile-sub-title>
-                  <v-list-tile-sub-title class="green-text">23%</v-list-tile-sub-title>
-                </v-list-tile-content>
-
-                <v-list-tile-action>
-                  <v-icon class="item-icons" color="error">highlight_off</v-icon>
-                  <v-icon class="item-icons" color="grey">settings</v-icon>
-                  <v-list-tile-action-text>400,000 votes</v-list-tile-action-text>
-                </v-list-tile-action>
-              </v-list-tile>
-              <v-divider v-if="index + 1 < items.length" :key="index"></v-divider>
-            </template>
-
-            <v-list-tile class="add-button">
-              <v-list-tile-action>
-                <!-- <v-list-tile-title>ADD CANDIDATE</v-list-tile-title> -->
-                <v-btn flat large color="primary">ADD CANDIDATE</v-btn>
-              </v-list-tile-action>
-            </v-list-tile>
-          </v-list>
-
-          <v-card-actions>
-            <v-btn flat icon color="error">
-              <v-icon>highlight_off</v-icon>
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-
-        <v-card width="290">
-          <v-card-title class="pb-0">
-            <span>Category</span>
-            <v-spacer></v-spacer>
-            <span class="light-grey">1.2 million votes</span>
-          </v-card-title>
-
-          <v-list three-line>
-            <template v-for="(item, index) in items">
-              <v-list-tile :key="item.title" avatar ripple @click="toggle(index)">
-                <v-list-tile-avatar>
-                  <img src="https://cdn.vuetifyjs.com/images/lists/5.jpg">
-                </v-list-tile-avatar>
-
-                <v-list-tile-content>
-                  <v-list-tile-sub-title class="text--primary">James Wilkens</v-list-tile-sub-title>
-                  <v-list-tile-sub-title class="text--primary">PartyA</v-list-tile-sub-title>
-                  <v-list-tile-sub-title class="green-text">23%</v-list-tile-sub-title>
-                </v-list-tile-content>
-
-                <v-list-tile-action>
-                  <v-icon class="item-icons" color="error">highlight_off</v-icon>
-                  <v-icon class="item-icons" color="grey">settings</v-icon>
-                  <v-list-tile-action-text>400,000 votes</v-list-tile-action-text>
-                </v-list-tile-action>
-              </v-list-tile>
-              <v-divider v-if="index + 1 < items.length" :key="index"></v-divider>
-            </template>
-
-            <v-list-tile class="add-button">
-              <v-list-tile-action>
-                <!-- <v-list-tile-title>ADD CANDIDATE</v-list-tile-title> -->
-                <v-btn flat large color="primary">ADD CANDIDATE</v-btn>
-              </v-list-tile-action>
-            </v-list-tile>
-          </v-list>
-
-          <v-card-actions>
-            <v-btn flat icon color="error">
-              <v-icon>highlight_off</v-icon>
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-
-        <v-card width="290">
-          <v-card-title class="pb-0">
-            <span>Category</span>
-            <v-spacer></v-spacer>
-            <span class="light-grey">1.2 million votes</span>
-          </v-card-title>
-
-          <v-list three-line>
-            <template v-for="(item, index) in items">
-              <v-list-tile :key="item.title" avatar ripple @click="toggle(index)">
-                <v-list-tile-avatar>
-                  <img src="https://cdn.vuetifyjs.com/images/lists/5.jpg">
-                </v-list-tile-avatar>
-
-                <v-list-tile-content>
-                  <v-list-tile-sub-title class="text--primary">James Wilkens</v-list-tile-sub-title>
-                  <v-list-tile-sub-title class="text--primary">PartyA</v-list-tile-sub-title>
-                  <v-list-tile-sub-title class="green-text">23%</v-list-tile-sub-title>
-                </v-list-tile-content>
-
-                <v-list-tile-action>
-                  <v-icon class="item-icons" color="error">highlight_off</v-icon>
-                  <v-icon class="item-icons" color="grey">settings</v-icon>
-                  <v-list-tile-action-text>400,000 votes</v-list-tile-action-text>
-                </v-list-tile-action>
-              </v-list-tile>
-              <v-divider :key="index"></v-divider>
-            </template>
-
-            <v-list-tile class="add-button">
-              <v-list-tile-action>
-                <!-- <v-list-tile-title>ADD CANDIDATE</v-list-tile-title> -->
-                <v-btn flat large color="primary">ADD CANDIDATE</v-btn>
-              </v-list-tile-action>
-            </v-list-tile>
-          </v-list>
-
-          <v-card-actions>
-            <v-btn flat icon color="error">
-              <v-icon>highlight_off</v-icon>
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-
-        <v-card width="290">
-          <v-card-title class="pb-0">
-            <span>Category</span>
-            <v-spacer></v-spacer>
-            <span class="light-grey">1.2 million votes</span>
-          </v-card-title>
-
-          <v-list three-line>
-            <template v-for="(item, index) in items">
-              <v-list-tile :key="item.title" avatar ripple @click="toggle(index)">
-                <v-list-tile-avatar>
-                  <img src="https://cdn.vuetifyjs.com/images/lists/5.jpg">
-                </v-list-tile-avatar>
-
-                <v-list-tile-content>
-                  <v-list-tile-sub-title class="text--primary">James Wilkens</v-list-tile-sub-title>
-                  <v-list-tile-sub-title class="text--primary">PartyA</v-list-tile-sub-title>
-                  <v-list-tile-sub-title class="green-text">23%</v-list-tile-sub-title>
-                </v-list-tile-content>
-
-                <v-list-tile-action>
-                  <v-icon class="item-icons" color="error">highlight_off</v-icon>
-                  <v-icon class="item-icons" color="grey">settings</v-icon>
-                  <v-list-tile-action-text>400,000 votes</v-list-tile-action-text>
-                </v-list-tile-action>
-              </v-list-tile>
-              <v-divider :key="index"></v-divider>
-            </template>
-
-            <v-list-tile class="add-button">
-              <v-list-tile-action>
-                <!-- <v-list-tile-title>ADD CANDIDATE</v-list-tile-title> -->
-                <v-btn flat large color="primary">ADD CANDIDATE</v-btn>
-              </v-list-tile-action>
-            </v-list-tile>
-          </v-list>
-
-          <v-card-actions>
-            <v-btn flat icon color="error">
-              <v-icon>highlight_off</v-icon>
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-
-        <v-card width="290" height="290" class="add-card">
-          <v-card-text>
-            <v-btn flat icon color="primary" large>
-              <v-icon>add</v-icon>
-            </v-btn>
-          </v-card-text>
-        </v-card>
+        <AddCategory @clicked="clicked"/>
       </div>
       <v-footer class="submit-area" fixed>
         <div class="submit-items">
           <v-btn flat large color="primary">SUBMIT CHANGES</v-btn>
-          <v-btn flat large color="error">SHUTDOWN VOTING PROCESS</v-btn>
+          <v-btn flat large color="error" @click="shutdownVotingProcess">SHUTDOWN VOTING PROCESS</v-btn>
         </div>
       </v-footer>
     </v-container>
+
+    <v-dialog v-model="dialog" max-width="290" persistent>
+      <Prompt :data="confirmData" @dismiss="dismiss" @confirm="confirm"/>
+    </v-dialog>
   </v-content>
 </template>
 
@@ -255,49 +41,253 @@
 
 import { Component, Vue } from "vue-property-decorator";
 import HelloWorld from "@/components/HelloWorld.vue"; // @ is an alias to /src
+import Category from "@/components/Category.vue";
+import AddCategory from "@/components/AddCategory.vue";
+import Prompt from "@/components/Prompt.vue";
 
 @Component({
   components: {
-    HelloWorld
+    HelloWorld,
+    Category,
+    AddCategory,
+    Prompt
   }
 })
 export default class Home extends Vue {
-  items = [
+  selected = [2];
+
+  dialog = false;
+
+  confirmData_ = null;
+
+  get confirmData() {
+    return this.confirmData_;
+  }
+
+  set confirmData(val) {
+    this.confirmData_ = val;
+  }
+
+  categories = [
     {
-      action: "15 min",
-      headline: "Brunch this weekend?",
-      title: "Ali Connors",
-      subtitle:
-        "I'll be in your neighborhood doing errands this weekend. Do you want to hang out?"
+      name: "Category",
+      currentVotes: 1200000, // Get a humanizer function
+      candidates: [
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        }
+      ]
     },
     {
-      action: "2 hr",
-      headline: "Summer BBQ",
-      title: "me, Scrott, Jennifer",
-      subtitle: "Wish I could come, but I'm out of town this weekend."
+      name: "Category",
+      currentVotes: 1200000, // Get a humanizer function
+      candidates: [
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        }
+      ]
     },
     {
-      action: "6 hr",
-      headline: "Oui oui",
-      title: "Sandra Adams",
-      subtitle: "Do you have Paris recommendations? Have you ever been?"
+      name: "Category",
+      currentVotes: 900000, // Get a humanizer function
+      candidates: [
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        }
+      ]
     },
     {
-      action: "12 hr",
-      headline: "Birthday gift",
-      title: "Trevor Hansen",
-      subtitle:
-        "Have any ideas about what we should get Heidi for her birthday?"
+      name: "Category",
+      currentVotes: 1200000, // Get a humanizer function
+      candidates: [
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        }
+      ]
     },
     {
-      action: "18hr",
-      headline: "Recipe to try",
-      title: "Britta Holt",
-      subtitle: "We should eat this: Grate, Squash, Corn, and tomatillo Tacos."
+      name: "Category",
+      currentVotes: 1200000, // Get a humanizer function
+      candidates: [
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        }
+      ]
+    },
+    {
+      name: "Category",
+      currentVotes: 1200000, // Get a humanizer function
+      candidates: [
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        },
+        {
+          name: "James Wilkens",
+          picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
+          party: "PartyA",
+          currentVotes: 400000
+        }
+      ]
     }
   ];
 
-  selected = [2];
+  mounted() {}
 
   toggle(index) {
     const i = this.selected.indexOf(index);
@@ -307,6 +297,32 @@ export default class Home extends Vue {
     } else {
       this.selected.push(index);
     }
+  }
+
+  clicked(data) {
+    if (data.action === "delete") {
+      this.openPrompt(data);
+      return;
+    }
+    console.log(data);
+  }
+
+  openPrompt(data) {
+    this.confirmData = data;
+    this.dialog = true;
+  }
+
+  confirm(data) {
+    console.log(data);
+    this.dialog = false;
+  }
+
+  dismiss() {
+    this.dialog = false;
+  }
+
+  shutdownVotingProcess() {
+    this.openPrompt({ shutdown: true });
   }
 }
 </script>
@@ -363,63 +379,15 @@ export default class Home extends Vue {
   text-align: center;
 }
 
-.item-icons {
-  font-size: 18px !important;
-  padding-bottom: 3px;
-  transition: all 0.2s linear;
-}
-
-.item-icons:hover {
-  transform: scale(1.2);
-  color: red !important;
-}
-
-.item-icons:active {
-  transform: scale(1);
-  color: white !important;
-}
-
-.v-list__tile__action--stack {
-  justify-content: center !important;
-}
-
-.v-card {
-  display: inline-block;
-  margin: 10px;
-  vertical-align: top;
-}
-
-.add-card {
-  transition: all 0.2s ease;
-}
-
-.add-card .v-card__text {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.add-card .v-btn {
-  height: 60%;
-  width: 60%;
-}
-
-.add-card .v-icon {
-  font-size: 100px !important;
-}
-
-.add-card:active {
-  transform: scale(0.8);
-}
-
 .v-card__actions {
   justify-content: flex-end;
 }
 
-.add-button {
-  display: flex;
+.justify-center {
   justify-content: center;
-  align-items: center;
+}
+
+.light-text {
+  font-weight: 300;
 }
 </style>
