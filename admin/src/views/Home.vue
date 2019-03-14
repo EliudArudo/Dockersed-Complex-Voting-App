@@ -30,7 +30,7 @@
 </template>
 
 <script>
-/// Realistic data simultation
+/// Realistic data simulation
 /// Refactor Cards into compontents
 /// Add Login-Screen
 /// Add prompt dialog ("Are you sure?")
