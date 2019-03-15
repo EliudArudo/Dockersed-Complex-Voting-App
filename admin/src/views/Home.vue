@@ -36,11 +36,10 @@
 
 <script>
 /// Realistic data simulation
-/// Refactor Cards into compontents
+/// Refactor Cards into compontents - Add Category Card
 /// Add Login-Screen
-/// Add prompt dialog ("Are you sure?")
 /// Add message snackbars
-/// Add Addition/Update input dialog
+/// Add Add Category input dialog
 /// Data submission in voter-notification format
 /// Add down button to scroll to add-card (Make it easy to scroll to add category card)
 
