@@ -10,6 +10,7 @@
           :category="category"
           :key="'category' + index"
           :ikey="'category' + index"
+          :id="'category' + index"
           @clicked="clicked"
         />
 
@@ -26,6 +27,10 @@
     <v-dialog v-model="dialog" max-width="290" persistent>
       <Prompt :data="confirmData" @dismiss="dismiss" @confirm="confirm"/>
     </v-dialog>
+
+    <v-dialog v-model="candidate_dialog" width="250" persistent>
+      <UpdateCandidate :key="cheatcode" :candidateInfo="candidateInfo" @dismiss="candidateClosed"/>
+    </v-dialog>
   </v-content>
 </template>
 
@@ -39,26 +44,34 @@
 /// Data submission in voter-notification format
 /// Add down button to scroll to add-card (Make it easy to scroll to add category card)
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import HelloWorld from "@/components/HelloWorld.vue"; // @ is an alias to /src
 import Category from "@/components/Category.vue";
 import AddCategory from "@/components/AddCategory.vue";
 import Prompt from "@/components/Prompt.vue";
+import UpdateCandidate from "@/components/UpdateCandidate.vue";
 
 @Component({
   components: {
     HelloWorld,
     Category,
     AddCategory,
-    Prompt
+    Prompt,
+    UpdateCandidate
   }
 })
 export default class Home extends Vue {
   selected = [2];
 
+  alarmArray = [];
+  notifications = [];
+
   dialog = false;
+  candidate_dialog = false;
+  cheatcode = 0;
 
   confirmData_ = null;
+  candidateInfo_ = null;
 
   get confirmData() {
     return this.confirmData_;
@@ -68,39 +81,47 @@ export default class Home extends Vue {
     this.confirmData_ = val;
   }
 
+  get candidateInfo() {
+    return this.candidateInfo_;
+  }
+
+  set candidateInfo(val) {
+    this.candidateInfo_ = val;
+  }
+
   categories = [
     {
       name: "Category",
       currentVotes: 1200000, // Get a humanizer function
       candidates: [
         {
-          name: "James Wilkens",
+          name: "James Wilkens A",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAcfsf",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAdfsd",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAdfdssw",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAdfsdyty",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAcbv",
           currentVotes: 400000
         }
       ]
@@ -110,33 +131,33 @@ export default class Home extends Vue {
       currentVotes: 1200000, // Get a humanizer function
       candidates: [
         {
-          name: "James Wilkens",
+          name: "James Wilkens B",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAdfs",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAjgh",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAsad",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAasds",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAwer",
           currentVotes: 400000
         }
       ]
@@ -146,33 +167,33 @@ export default class Home extends Vue {
       currentVotes: 900000, // Get a humanizer function
       candidates: [
         {
-          name: "James Wilkens",
+          name: "James Wilkens C",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAhkg",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAip",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAzxc",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAzxcs",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAdfhd",
           currentVotes: 400000
         }
       ]
@@ -182,33 +203,33 @@ export default class Home extends Vue {
       currentVotes: 1200000, // Get a humanizer function
       candidates: [
         {
-          name: "James Wilkens",
+          name: "James Wilkens D",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAjkl",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAfhf",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAfgh",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAfhgfg",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAfghf",
           currentVotes: 400000
         }
       ]
@@ -218,33 +239,33 @@ export default class Home extends Vue {
       currentVotes: 1200000, // Get a humanizer function
       candidates: [
         {
-          name: "James Wilkens",
+          name: "James Wilkens E",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAxfs",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAsdfsd",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAqwe",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAsdfsd",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAklghj",
           currentVotes: 400000
         }
       ]
@@ -254,38 +275,50 @@ export default class Home extends Vue {
       currentVotes: 1200000, // Get a humanizer function
       candidates: [
         {
-          name: "James Wilkens",
+          name: "James Wilkens F",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAqwe",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAxsd",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAcxvxc",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAcxv",
           currentVotes: 400000
         },
         {
           name: "James Wilkens",
           picture: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-          party: "PartyA",
+          party: "PartyAxcv",
           currentVotes: 400000
         }
       ]
     }
   ];
+
+  @Watch("notifications", { deep: true })
+  onNotificationChanged(val) {
+    console.log("Notifications changed", val);
+  }
+
+  @Watch("candidate_dialog")
+  onCandidateDialogOpened(val) {
+    if (val) {
+      this.cheatcode++;
+    }
+  }
 
   mounted() {}
 
@@ -304,6 +337,10 @@ export default class Home extends Vue {
       this.openPrompt(data);
       return;
     }
+
+    if (data.type === "candidate") {
+      this.openCandidate(data);
+    }
     console.log(data);
   }
 
@@ -312,13 +349,71 @@ export default class Home extends Vue {
     this.dialog = true;
   }
 
+  alerter(id) {
+    if (!this.alarmArray.includes(id)) {
+      this.alarmArray.push(id);
+    }
+    const element = document.getElementById(id);
+
+    element.style.boxShadow = "0 0 5px yellow";
+  }
+
   confirm(data) {
+    //// Confirmed
     console.log(data);
     this.dialog = false;
+
+    if (data.action === "delete") {
+      const index = this.categories.findIndex(
+        item => JSON.stringify(item) === JSON.stringify(data.parent)
+      );
+
+      if (data.type === "candidate") {
+        // Show alert on parent
+
+        this.categories[index].candidates = this.categories[
+          index
+        ].candidates.filter(
+          item => JSON.stringify(item) !== JSON.stringify(data.item)
+        );
+
+        this.alerter(data.parentId);
+
+        // Notificaiton is update with updated list of candidates
+        this.notifications.push({
+          category: this.categories[index].name,
+          type: "update",
+          candidates: this.categories[index].candidates
+        });
+      } else if (data.type === "category") {
+        // No alert on parent here
+
+        this.notifications.push({
+          category: this.categories[index].name,
+          type: "delete"
+        });
+
+        this.categories = this.categories.filter(
+          item => JSON.stringify(item) !== JSON.stringify(data.parent)
+        );
+      }
+    }
   }
 
   dismiss() {
     this.dialog = false;
+  }
+
+  openCandidate(candidateData) {
+    // Assign props here
+    this.candidateInfo = candidateData;
+    this.candidate_dialog = true;
+  }
+
+  candidateClosed(e) {
+    console.log(e);
+
+    this.candidate_dialog = false;
   }
 
   shutdownVotingProcess() {
@@ -389,5 +484,51 @@ export default class Home extends Vue {
 
 .light-text {
   font-weight: 300;
+}
+
+.candidate {
+  height: 200px;
+  width: 100%;
+}
+
+.candidate-image {
+  width: 100%;
+  // height: 100%;
+  float: left;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.candidate-info {
+  width: 100%;
+  // height: 100%;
+  float: left;
+  box-sizing: border-box;
+  padding: 0 10px;
+}
+
+.candidate-image .v-avatar {
+  overflow: hidden;
+}
+
+.candidate-image .v-avatar img {
+  width: unset !important;
+}
+
+.candidate-avatar {
+  transition: all 0.3s ease;
+}
+
+.candidate-avatar:hover {
+  transform: scale(1.1);
+}
+
+.candidate-avatar:active {
+  transform: scale(1);
+}
+
+.full-width {
+  width: 100%;
 }
 </style>

@@ -8,7 +8,13 @@
 
     <v-list three-line>
       <template v-for="(candidate, index) in category.candidates">
-        <v-list-tile :key="ikey + index" avatar ripple @click="itemClicked">
+        <v-list-tile
+          :id="ikey + 'card' + index"
+          :key="ikey + index"
+          avatar
+          ripple
+          @click="itemClicked"
+        >
           <v-list-tile-avatar>
             <img :src="candidate.picture">
           </v-list-tile-avatar>
@@ -25,12 +31,12 @@
             <v-icon
               class="item-icons"
               color="error"
-              @click="click('candidate', 'delete', candidate, category)"
+              @click="click('candidate', 'delete', candidate, category, ikey, (ikey + 'card' + index))"
             >highlight_off</v-icon>
             <v-icon
               class="item-icons"
               color="grey"
-              @click="click('candidate', 'update', candidate, category)"
+              @click="click('candidate', 'update', candidate, category, ikey, (ikey + 'card' + index))"
             >settings</v-icon>
             <v-list-tile-action-text>{{candidate.currentVotes.toLocaleString()}} votes</v-list-tile-action-text>
           </v-list-tile-action>
@@ -44,14 +50,14 @@
             flat
             large
             color="primary"
-            @click="click('candidate', 'add', null, category)"
+            @click="click('candidate', 'add', null, category, ikey)"
           >ADD CANDIDATE</v-btn>
         </v-list-tile-action>
       </v-list-tile>
     </v-list>
 
     <v-card-actions>
-      <v-btn flat icon color="error" @click="click('category', 'delete', null, category)">
+      <v-btn flat icon color="error" @click="click('category', 'delete', null, category, ikey)">
         <v-icon>highlight_off</v-icon>
       </v-btn>
     </v-card-actions>
@@ -102,12 +108,14 @@ export default class CategoryComponent extends Vue {
     // Do nothing
   }
 
-  click(type, action, item, parent) {
+  click(type, action, item, parent, parentId, itemId) {
     const data = {
       type, // canditate // category
       action, // delete // update
       item, // real item to modify
-      parent
+      parent,
+      parentId,
+      itemId
     };
 
     this.$emit("clicked", data);
