@@ -34,8 +34,8 @@
       <v-btn
         color="primary"
         flat="flat"
-        @click="dismiss"
-      >{{this.candidateInfo.item? 'UPDATE' : 'ADD'}}</v-btn>
+        @click="submit"
+      >{{this.candidateInfo && this.candidateInfo.item? 'UPDATE' : 'ADD'}}</v-btn>
 
       <v-btn color="error" flat="flat" @click="dismiss">CANCEL</v-btn>
     </v-card-actions>
@@ -48,7 +48,7 @@ import { Vue, Component } from "vue-property-decorator";
 @Component({
   props: ["candidateInfo"]
 })
-export default class AddCandidateComponent extends Vue {
+export default class UpdateCandidateComponent extends Vue {
   candidate_name = null;
   candidate_party = null;
   candidate_pic_ = null;
@@ -194,6 +194,39 @@ export default class AddCandidateComponent extends Vue {
     } catch (e) {
       console.log(e);
     }
+  }
+
+  submit() {
+    const nullStatus =
+      !this.candidate_name ||
+      !this.candidate_party ||
+      !this.candidate_pic ||
+      (this.candidate_name.trim() === "" || this.candidate_party.trim() === "");
+
+    if (nullStatus) {
+      this.$emit("notify", "Please update all fields as required");
+      return;
+    }
+
+    console.log(this.candidateInfo);
+
+    let data = { ...this.candidateInfo };
+
+    if (this.candidateInfo && this.candidateInfo.item) {
+      data.oldItem = { ...data.item };
+    }
+
+    const currentVotes =
+      data && data.item && data.item.currentVotes ? data.item.currentVotes : 0;
+
+    data.item = {
+      currentVotes,
+      name: this.candidate_name,
+      party: this.candidate_party,
+      picture: this.candidate_pic
+    };
+
+    this.$emit("dismiss", data);
   }
 
   dismiss() {

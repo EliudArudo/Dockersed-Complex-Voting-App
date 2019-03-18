@@ -1,7 +1,7 @@
 <template>
   <v-card width="290" class="category-card">
-    <v-card-title class="pb-0">
-      <span>{{category.name}}</span>
+    <v-card-title class="pb-0 clickable">
+      <span @click="click('category', 'update', null, category, ikey, null)">{{category.name}}</span>
       <v-spacer></v-spacer>
       <span class="light-grey">{{humanize(category.currentVotes)}} votes</span>
     </v-card-title>
@@ -24,7 +24,7 @@
             <v-list-tile-sub-title class="text--primary">{{candidate.party}}</v-list-tile-sub-title>
             <v-list-tile-sub-title
               class="green-text"
-            >{{Math.round((candidate.currentVotes / category.currentVotes) * 100) + '%'}}</v-list-tile-sub-title>
+            >{{isNaN(Math.round((candidate.currentVotes / category.currentVotes) * 100))? '0%' : Math.round((candidate.currentVotes / category.currentVotes) * 100) + '%'}}</v-list-tile-sub-title>
           </v-list-tile-content>
 
           <v-list-tile-action>
