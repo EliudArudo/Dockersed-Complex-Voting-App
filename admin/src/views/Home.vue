@@ -396,10 +396,6 @@ export default class Home extends Vue {
   }
 
   notificationsPush(data) {
-    const found = this.notifications.findIndex(item => {
-      return item.category === data.category;
-    });
-
     this.notifications.push(data);
   }
 
