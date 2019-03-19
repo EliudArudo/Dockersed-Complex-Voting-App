@@ -208,6 +208,29 @@ export default class UpdateCandidateComponent extends Vue {
       return;
     }
 
+    /// Make sure no two parties are in the same category
+    const partyExists = this.candidateInfo.parent.candidates.findIndex(
+      person =>
+        person.party.toLowerCase().trim() ===
+        this.candidate_party.toLowerCase().trim()
+    );
+
+    const nameExists = this.candidateInfo.parent.candidates.findIndex(
+      person =>
+        person.name.toLowerCase().trim() ===
+        this.candidate_name.toLowerCase().trim()
+    );
+
+    if (partyExists !== -1 && !this.candidateInfo.item) {
+      this.$emit("notify", "A candidate with the party already exists");
+      return;
+    }
+
+    if (nameExists !== -1 && !this.candidateInfo.item) {
+      this.$emit("notify", "A candidate with the same name already exists");
+      return;
+    }
+
     console.log(this.candidateInfo);
 
     let data = { ...this.candidateInfo };

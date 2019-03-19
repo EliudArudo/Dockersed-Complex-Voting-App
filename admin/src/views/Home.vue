@@ -81,6 +81,16 @@
       />
     </v-dialog>
 
+    <v-dialog v-model="final" width="400" persistent>
+      <SubmitChangeDialog
+        :key="cheatcode3"
+        :changes="totalChanges"
+        :categories="categories"
+        @restore="restoreCategory"
+        @dismiss="finalChanges"
+      />
+    </v-dialog>
+
     <v-snackbar v-model="snackbar" top left :timeout="3000">
       {{snackbar_message}}
       <v-btn color="primary" flat @click="snackbar = false">Close</v-btn>
@@ -107,8 +117,9 @@ import AddCategory from "@/components/AddCategory.vue";
 import Prompt from "@/components/Prompt.vue";
 import UpdateCandidate from "@/components/UpdateCandidate.vue";
 import CategoryName from "@/components/CategoryName.vue";
+import SubmitChangeDialog from "@/components/SubmitChangeDialog.vue";
 
-import { categories } from "@/mock/data.ts";
+import { categories, originalcategories } from "@/mock/data.ts";
 
 @Component({
   components: {
@@ -117,7 +128,8 @@ import { categories } from "@/mock/data.ts";
     AddCategory,
     Prompt,
     UpdateCandidate,
-    CategoryName
+    CategoryName,
+    SubmitChangeDialog
   }
 })
 export default class Home extends Vue {
@@ -132,6 +144,7 @@ export default class Home extends Vue {
   candidate_dialog = false;
   cheatcode = 0;
   cheatcode2 = 0;
+  cheatcode3 = 0;
 
   category_name = false;
 
@@ -145,6 +158,8 @@ export default class Home extends Vue {
 
   loader = null;
   loading4 = false;
+
+  final = false;
 
   get snackbar_message() {
     return this.snackbar_message_;
@@ -179,6 +194,7 @@ export default class Home extends Vue {
   }
 
   categories = [];
+  backup_categories = [];
 
   @Watch("loader")
   loaderChanged() {
@@ -199,6 +215,15 @@ export default class Home extends Vue {
   onCandidateDialogOpened(val) {
     if (val) {
       this.cheatcode++;
+    } else {
+      this.candidateInfo = null;
+    }
+  }
+
+  @Watch("final")
+  onFinalDialogOpened(val) {
+    if (val) {
+      this.cheatcode3++;
     }
   }
 
@@ -227,8 +252,13 @@ export default class Home extends Vue {
   }
 
   mounted() {
-    this.categories = [...categories];
-    // console.log(categories);
+    this.categories = JSON.parse(JSON.stringify(categories));
+    this.backup_categories = JSON.parse(JSON.stringify(categories));
+
+    this.categories = this.categories.map(item => {
+      item.originalName = item.name;
+      return item;
+    });
   }
 
   openToast(message) {
@@ -306,7 +336,7 @@ export default class Home extends Vue {
 
         // Notificaiton is update with updated list of candidates
         this.notificationsPush({
-          category: this.categories[index].name,
+          category: this.categories[index].originalName,
           type: "update",
           candidates: this.categories[index].candidates
         });
@@ -320,7 +350,7 @@ export default class Home extends Vue {
         // No alert on parent here
 
         this.notificationsPush({
-          category: this.categories[index].name,
+          category: this.categories[index].originalName,
           type: "delete"
         });
 
@@ -343,7 +373,7 @@ export default class Home extends Vue {
         const lastIndex = this.categories[index].candidates.length - 1;
 
         this.notificationsPush({
-          category: this.categories[index].name,
+          category: this.categories[index].originalName,
           type: "update",
           candidates: this.categories[index].candidates
         });
@@ -377,7 +407,7 @@ export default class Home extends Vue {
         }
 
         this.notificationsPush({
-          category: this.categories[index].name,
+          category: this.categories[index].originalName,
           type: "update",
           candidates: this.categories[index].candidates
         });
@@ -431,14 +461,14 @@ export default class Home extends Vue {
       );
 
       this.notificationsPush({
-        category: this.categories[index].name,
+        category: this.categories[index].originalName,
         type: "update",
         newName: e.name
       });
 
       this.categories[index].name = e.name;
 
-      if (!this.alarmArray.includes(`category${index}`)) {
+      if (!this.alarmArray.includes()) {
         this.alarmArray.push(`category${index}`);
       }
       return;
@@ -448,7 +478,8 @@ export default class Home extends Vue {
     this.categories.push({
       name: e.name,
       currentVotes: 0,
-      candidates: []
+      candidates: [],
+      originalName: e.name
     });
 
     const index = this.categories.length - 1;
@@ -473,20 +504,27 @@ export default class Home extends Vue {
     this.loader = "loading4";
 
     this.notifications = [];
+    this.alarmArray = [];
     this.totalChanges = [];
     this.categories = [];
-    this.categories = [...categories];
+
+    this.categories = JSON.parse(JSON.stringify(this.backup_categories));
+
+    this.categories = this.categories.map(item => {
+      item.originalName = item.name;
+      return item;
+    });
   }
 
   submitAll() {
-    console.log(this.notifications);
+    // console.log(this.notifications);
     if (this.notifications.length === 0) {
       this.openToast("No changes to be applied");
       return;
     }
 
     this.notifications.forEach((data, index, array) => {
-      console.log(data);
+      // console.log(data);
 
       const change = this.notificationProcessor(data);
 
@@ -495,7 +533,8 @@ export default class Home extends Vue {
       }
 
       if (index === array.length - 1) {
-        console.log(this.totalChanges);
+        // console.log(this.totalChanges);
+        this.final = true;
       }
     });
   }
@@ -524,7 +563,72 @@ export default class Home extends Vue {
         break;
     }
 
-    this.totalChanges.push(message);
+    // this.totalChanges.push(message);
+    this.totalChanges.push({
+      category: data.category,
+      message
+    });
+  }
+
+  restoreCategory(category) {
+    // Notifications changed
+
+    this.notifications = this.notifications.filter(
+      notifications => notifications.category !== category
+    );
+    // Total Changes processed already
+    let indexTop = this.categories.findIndex(
+      it => it.originalName === category
+    );
+
+    let originalIndex = this.backup_categories.findIndex(
+      it => it.name === category
+    );
+
+    ///// no-restored - meaning it's not it original-categories
+    if (originalIndex === -1) {
+      // Meaning it was a new category
+      this.categories = this.categories.filter(
+        item => item.originalName !== category
+      );
+      this.openToast("New categories are not added to original data");
+      return;
+    }
+    ////
+
+    const restored = JSON.parse(
+      JSON.stringify(this.backup_categories[originalIndex])
+    );
+    ///// On delete, no alarm array
+    if (indexTop === -1) {
+      restored.originalName = restored.name;
+      this.categories.push({ ...restored });
+    }
+    /////
+
+    this.alarmArray.forEach((item, index, array) => {
+      if (item.toLowerCase().includes(`category${indexTop}`)) {
+        this.removeaalert(item);
+        this.alarmArray = this.alarmArray.filter(it => it !== item);
+      }
+
+      if (index === array.length - 1) {
+        // Restore actual category
+        // If name does not exist, do something
+
+        this.categories[indexTop] = { ...restored };
+      }
+    });
+  }
+
+  finalChanges(e) {
+    this.final = false;
+    this.totalChanges = [];
+    console.log(e);
+    if (e) {
+      console.log("Final changes", e);
+      console.log("Final notification to send", this.notifications);
+    }
   }
 
   capitalize(string) {
