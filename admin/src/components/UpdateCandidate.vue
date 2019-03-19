@@ -245,6 +245,7 @@ export default class UpdateCandidateComponent extends Vue {
     data.item = {
       currentVotes,
       name: this.candidate_name,
+      originalName: this.candidate_name,
       party: this.candidate_party,
       picture: this.candidate_pic
     };

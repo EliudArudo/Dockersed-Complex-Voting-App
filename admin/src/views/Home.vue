@@ -257,6 +257,12 @@ export default class Home extends Vue {
 
     this.categories = this.categories.map(item => {
       item.originalName = item.name;
+
+      item.candidates = item.candidates.map(person => {
+        person.originalName = person.name;
+        return person;
+      });
+
       return item;
     });
   }
@@ -512,6 +518,12 @@ export default class Home extends Vue {
 
     this.categories = this.categories.map(item => {
       item.originalName = item.name;
+
+      item.candidates = item.candidates.map(person => {
+        person.originalName = person.name;
+        return person;
+      });
+
       return item;
     });
   }
