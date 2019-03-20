@@ -99,13 +99,13 @@
 </template>
 
 <script>
-/// Realistic data simulation
-/// Refactor Cards into compontents - Add Category Card
 /// Add Login-Screen
-/// Add message snackbars
-/// Add Add Category input dialog
-/// Data submission in voter-notification format
-/// Add down button to scroll to add-card (Make it easy to scroll to add category card)
+
+// Incoming votes are inform of "Category object", then run this.pulseProcessor(Category)
+
+// On Submitting changes, on success, we'll receive an entire "Categories Object" -> All our categories, from where we can start again
+// Updated "Categories Object" is what RESULTS will get also
+// Client will get just the changes needed -> From admin's change object in notification format
 
 import { Component, Vue, Watch } from "vue-property-decorator";
 
@@ -208,7 +208,7 @@ export default class Home extends Vue {
 
   @Watch("notifications", { deep: true })
   onNotificationChanged(val) {
-    console.log("Notifications changed", val);
+    // console.log("Notifications changed", val);
   }
 
   @Watch("candidate_dialog")
@@ -238,8 +238,6 @@ export default class Home extends Vue {
 
   @Watch("alarmArray")
   onAlarmArrayUpdated(val, oldVal) {
-    console.log("AlarmArray updates", val);
-
     oldVal.forEach(id => {
       this.removeaalert(id);
     });
@@ -265,7 +263,216 @@ export default class Home extends Vue {
 
       return item;
     });
+
+    //  --------- UNCOMMENT TO START INCOMING VOTES LIVE UPDATES ------
+    // setInterval(() => {
+    //   /// user this.pulseProcessor(category) in PROD
+    //   this.streamSimulator();
+    // }, 5000);
+    //  --------- UNCOMMENT TO START INCOMING VOTES LIVE UPDATES ------
   }
+
+  /// USED IN PRODUCTION
+
+  pulseProcessor(pulse) {
+    // 'pulse' is a category object with new changes
+    // Looks for category and candidate and updates respectively
+    // No notifications here
+
+    const categoryIndex = this.categories.findIndex(
+      item => item.name.toLowerCase() === pulse.name.toLowerCase()
+    );
+
+    const backupCategoryIndex = this.backup_categories.findIndex(
+      item => item.name.toLowerCase() === pulse.name.toLowerCase()
+    );
+
+    if (categoryIndex === -1) {
+      // Check if it exists in backup, so we can update backup
+
+      if (backupCategoryIndex === -1) {
+        // Hardly, because since it's coming in, the backup should have it
+        return;
+      }
+
+      this.backup_categories[backupCategoryIndex].currentVotes = JSON.parse(
+        JSON.stringify(pulse.currentVotes)
+      );
+      /// Because update object contains Category as a whole
+      /// Just mutating whole backup candidate objects
+      this.backup_categories[backupCategoryIndex].candidates = JSON.parse(
+        JSON.stringify(pulse.candidates)
+      );
+      // Meaning the category has been deleted
+      // Backgound and silent operation
+      return;
+    }
+
+    /// If category is found
+
+    /// All magic happens here
+    this.categories[categoryIndex].currentVotes = pulse.currentVotes;
+
+    pulse.candidates.forEach(item => {
+      let candidateIndex = this.categories[categoryIndex].candidates.findIndex(
+        person => person.originalName === item.name
+      );
+
+      if (candidateIndex !== -1) {
+        // If Candidate is in Current List of Categories, definitely in Backup
+        // Change in Current List of Categories and Backup categories
+        this.categories[categoryIndex].candidates[candidateIndex].currentVotes =
+          item.currentVotes;
+
+        /// Imported from simulator
+        this.backupUpdator(
+          {
+            index: categoryIndex,
+            currentVotes: this.categories[categoryIndex].currentVotes
+          },
+          {
+            index: candidateIndex,
+            currentVotes: this.categories[categoryIndex].candidates[
+              candidateIndex
+            ].currentVotes
+          }
+        );
+
+        this.pulseAlert(`category${categoryIndex}`);
+
+        setTimeout(() => {
+          this.pulseAlert(`category${categoryIndex}card${candidateIndex}`);
+        }, 300);
+
+        console.log(`'${this.categories[categoryIndex].name}' updated`);
+
+        /// Imported from simulator
+      } else {
+        // If candidate is not in current Categories but in Backup (SHOULD BE THERE)
+        // Change in Backup categories
+        candidateIndex = this.backup_categories[
+          backupCategoryIndex
+        ].candidates.findIndex(person => person.name === item.name);
+
+        /// Just update directly
+        this.backup_categories[backupCategoryIndex].candidates[
+          candidateIndex
+        ] = JSON.parse(JSON.stringify(item));
+
+        /// ---  No alerts after update
+      }
+    });
+  }
+
+  pulseAlert(id) {
+    const element = document.getElementById(id);
+
+    const prevShadow = element.style.boxShadow;
+
+    element.style.boxShadow = "0 0 10px #1976d2";
+
+    setTimeout(() => {
+      // List item
+      element.style.boxShadow = prevShadow;
+    }, 2000);
+  }
+
+  backupUpdator(category, candidate) {
+    // category and candidate have {index: '', currentVotes: ''}
+
+    const trueCategoryIndex = this.backup_categories.findIndex(
+      inner_category =>
+        inner_category.name === this.categories[category.index].originalName
+    );
+    const trueCandidateIndex = this.backup_categories[
+      trueCategoryIndex
+    ].candidates.findIndex(
+      person =>
+        person.name ===
+        this.categories[category.index].candidates[candidate.index].originalName
+    );
+
+    this.backup_categories[trueCategoryIndex].currentVotes =
+      category.currentVotes;
+    this.backup_categories[trueCategoryIndex].candidates[
+      trueCandidateIndex
+    ].currentVotes = candidate.currentVotes;
+  }
+
+  /// USED IN PRODUCTION
+
+  //// Simulators - REMOVED IN PRODUCTION
+  streamSimulator() {
+    const categorySize = this.categories.length - 1;
+
+    const randomCategoryNumber = this.generateRandomInteger(0, categorySize);
+
+    const candidateSize =
+      this.categories[randomCategoryNumber].candidates.length - 1;
+
+    const randomCandidateNumber = this.generateRandomInteger(0, candidateSize);
+
+    const randomVoteIncrement = this.generateRandomInteger(1, 100);
+
+    /// Check if category or candidate exists in backup, if not, run this again
+    const categoryInBackup =
+      this.backup_categories.findIndex(
+        item => item.name === this.categories[randomCategoryNumber].originalName
+      ) !== -1;
+
+    let candidateInBackup = false;
+    if (this.backup_categories[randomCategoryNumber]) {
+      candidateInBackup =
+        this.backup_categories[randomCategoryNumber].candidates.findIndex(
+          person =>
+            person.name ===
+            this.categories[randomCategoryNumber].candidates[
+              randomCandidateNumber
+            ].originalName
+        ) !== -1;
+    }
+
+    /// Return everything until you get both
+    if (!categoryInBackup || !candidateInBackup) {
+      return;
+    }
+
+    // Update category first
+    this.categories[randomCategoryNumber].currentVotes += randomVoteIncrement;
+    // Then update candidate
+    this.categories[randomCategoryNumber].candidates[
+      randomCandidateNumber
+    ].currentVotes += randomVoteIncrement;
+
+    /// Cut off here
+    this.backupUpdator(
+      {
+        index: randomCategoryNumber,
+        currentVotes: this.categories[randomCategoryNumber].currentVotes
+      },
+      {
+        index: randomCandidateNumber,
+        currentVotes: this.categories[randomCategoryNumber].candidates[
+          randomCandidateNumber
+        ].currentVotes
+      }
+    );
+
+    this.pulseAlert(`category${randomCategoryNumber}`);
+
+    setTimeout(() => {
+      this.pulseAlert(
+        `category${randomCategoryNumber}card${randomCandidateNumber}`
+      );
+    }, 300);
+
+    console.log(`'${this.categories[randomCategoryNumber].name}' updated`);
+  }
+
+  generateRandomInteger(min, max) {
+    return Math.floor(min + Math.random() * (max + 1 - min));
+  }
+  //// Simulators - REMOVED IN PRODUCTION
 
   openToast(message) {
     this.snackbar_message = message;
@@ -317,13 +524,17 @@ export default class Home extends Vue {
   removeaalert(id) {
     const element = document.getElementById(id);
     if (element) {
+      if (!id.includes("card")) {
+        element.style.boxShadow =
+          "0px 3px 1px -2px rgba(0,0,0,0.2), 0px 2px 2px 0px rgba(0,0,0,0.14), 0px 1px 5px 0px rgba(0,0,0,0.12)";
+        return;
+      }
       element.style.boxShadow = "none";
     }
   }
 
   confirm(data) {
     //// Confirmed
-    console.log(data);
     this.dialog = false;
 
     if (data.action === "delete") {
@@ -339,6 +550,9 @@ export default class Home extends Vue {
         ].candidates.filter(
           item => JSON.stringify(item) !== JSON.stringify(data.item)
         );
+
+        /// Subtract the votes
+        this.categories[index].currentVotes -= data.item.currentVotes;
 
         // Notificaiton is update with updated list of candidates
         this.notificationsPush({
@@ -375,6 +589,8 @@ export default class Home extends Vue {
         );
 
         this.categories[index].candidates.push(data.item);
+
+        // No need to add, since candidate starts at 0;
 
         const lastIndex = this.categories[index].candidates.length - 1;
 
@@ -446,7 +662,6 @@ export default class Home extends Vue {
   }
 
   candidateClosed(e) {
-    console.log(e);
     this.candidate_dialog = false;
 
     if (e) {
@@ -489,7 +704,6 @@ export default class Home extends Vue {
     });
 
     const index = this.categories.length - 1;
-    // console.log(index);
     setTimeout(() => {
       if (!this.alarmArray.includes(`category${index}`)) {
         this.alarmArray.push(`category${index}`);
@@ -529,15 +743,12 @@ export default class Home extends Vue {
   }
 
   submitAll() {
-    // console.log(this.notifications);
     if (this.notifications.length === 0) {
       this.openToast("No changes to be applied");
       return;
     }
 
     this.notifications.forEach((data, index, array) => {
-      // console.log(data);
-
       const change = this.notificationProcessor(data);
 
       if (change) {
@@ -545,7 +756,6 @@ export default class Home extends Vue {
       }
 
       if (index === array.length - 1) {
-        // console.log(this.totalChanges);
         this.final = true;
       }
     });
@@ -636,10 +846,8 @@ export default class Home extends Vue {
   finalChanges(e) {
     this.final = false;
     this.totalChanges = [];
-    console.log(e);
     if (e) {
-      console.log("Final changes", e);
-      console.log("Final notification to send", this.notifications);
+      console.log("Final notifications to send", this.notifications);
     }
   }
 
