@@ -39,7 +39,7 @@
       </v-list>
     </v-card-text>
     <v-card-actions class="justify-center">
-      <v-btn color="primary" flat="flat" @click="dismiss(data)">GREAT!</v-btn>
+      <v-btn color="primary" flat="flat" @click="dismiss(true)">GREAT!</v-btn>
 
       <v-btn color="error" flat="flat" @click="dismiss()">NOP</v-btn>
     </v-card-actions>
@@ -58,8 +58,6 @@ export default class SubmitChangeDialogComponent extends Vue {
   items = [];
 
   created() {
-    console.log("changes", this.changes);
-    console.log("categories", this.categories);
     // this.data = [...this.changes];
     this.transformChanges();
   }

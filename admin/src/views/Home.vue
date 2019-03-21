@@ -50,10 +50,19 @@
         </template>
       </v-btn>
 
+      <v-btn dark fab color="error" fixed bottom right class="logout-btn" to="/">
+        <v-icon>exit_to_app</v-icon>
+      </v-btn>
+
       <v-footer class="submit-area" fixed>
         <div class="submit-items">
           <v-btn flat large color="primary" @click="submitAll">SUBMIT CHANGES</v-btn>
-          <v-btn flat large color="error" @click="shutdownVotingProcess">SHUTDOWN VOTING PROCESS</v-btn>
+          <v-btn
+            flat
+            large
+            :color="votingShutdown? 'success': 'error'"
+            @click="votingProcess(!votingShutdown)"
+          >{{votingShutdown? 'START VOTING PROCESS' : 'SHUTDOWN VOTING PROCESS'}}</v-btn>
         </div>
       </v-footer>
     </v-container>
@@ -95,6 +104,15 @@
       {{snackbar_message}}
       <v-btn color="primary" flat @click="snackbar = false">Close</v-btn>
     </v-snackbar>
+
+    <v-snackbar v-model="shutdownDialog" top left :timeout="0">
+      Shutting down in {{shutDownCountDown}}
+      <v-btn color="primary" flat @click="stopShutDown">STOP</v-btn>
+    </v-snackbar>
+
+    <v-dialog v-model="loading" width="300" persistent>
+      <Loading :message="loadingMessage"/>
+    </v-dialog>
   </v-content>
 </template>
 
@@ -107,6 +125,8 @@
 // Updated "Categories Object" is what RESULTS will get also
 // Client will get just the changes needed -> From admin's change object in notification format
 
+// All requests to server should have tokens with them
+
 import { Component, Vue, Watch } from "vue-property-decorator";
 
 import * as _ from "lodash";
@@ -118,8 +138,17 @@ import Prompt from "@/components/Prompt.vue";
 import UpdateCandidate from "@/components/UpdateCandidate.vue";
 import CategoryName from "@/components/CategoryName.vue";
 import SubmitChangeDialog from "@/components/SubmitChangeDialog.vue";
+import Loading from "@/components/Loading.vue";
 
 import { categories, originalcategories } from "@/mock/data.ts";
+
+import TopComponent from "vue-class-component";
+
+TopComponent.registerHooks([
+  "beforeRouteEnter",
+  "beforeRouteLeave",
+  "beforeRouteUpdate" // for vue-router 2.2+
+]);
 
 @Component({
   components: {
@@ -129,7 +158,8 @@ import { categories, originalcategories } from "@/mock/data.ts";
     Prompt,
     UpdateCandidate,
     CategoryName,
-    SubmitChangeDialog
+    SubmitChangeDialog,
+    Loading
   }
 })
 export default class Home extends Vue {
@@ -141,6 +171,7 @@ export default class Home extends Vue {
   notifications = [];
 
   dialog = false;
+  loading = false;
   candidate_dialog = false;
   cheatcode = 0;
   cheatcode2 = 0;
@@ -156,11 +187,28 @@ export default class Home extends Vue {
   snackbar = false;
   snackbar_message_ = null;
 
+  loadingMessage_ = null;
+
   loader = null;
   loading4 = false;
 
   final = false;
 
+  votingShutdown = true;
+  shutdownDialog = false;
+  shutDownTimer = null;
+  shutDownCountDown = 10;
+  shutdowntime = 9;
+
+  votingSimulator = null;
+
+  get loadingMessage() {
+    return this.loadingMessage_;
+  }
+
+  set loadingMessage(val) {
+    this.loadingMessage_ = val;
+  }
   get snackbar_message() {
     return this.snackbar_message_;
   }
@@ -195,6 +243,27 @@ export default class Home extends Vue {
 
   categories = [];
   backup_categories = [];
+
+  @Watch("shutdownDialog")
+  onShuttingDown(val) {
+    if (val) {
+      this.shutDownTimer = setInterval(() => {
+        this.shutDownCountDown = this.shutdowntime;
+        this.shutdowntime--;
+
+        if (this.shutdowntime === 0) {
+          clearInterval(this.shutDownTimer);
+          /// Change status
+          setTimeout(() => {
+            this.shutdown();
+          }, 2000);
+        }
+      }, 2000);
+    } else {
+      this.shutdowntime = 9;
+      this.shutDownCountDown = 10;
+    }
+  }
 
   @Watch("loader")
   loaderChanged() {
@@ -249,6 +318,17 @@ export default class Home extends Vue {
     }, 1000);
   }
 
+  beforeRouteEnter(to, from, next) {
+    //// Do out testing of credentials here to server before entering
+    const allowed = true; /// variable of truth
+
+    if (allowed) {
+      next();
+    } else {
+      next("/");
+    }
+  }
+
   mounted() {
     this.categories = JSON.parse(JSON.stringify(categories));
     this.backup_categories = JSON.parse(JSON.stringify(categories));
@@ -270,6 +350,15 @@ export default class Home extends Vue {
     //   this.streamSimulator();
     // }, 5000);
     //  --------- UNCOMMENT TO START INCOMING VOTES LIVE UPDATES ------
+  }
+
+  startLoading(message) {
+    this.loadingMessage = message;
+    this.loading = true;
+  }
+
+  stopLoading() {
+    this.loading = false;
   }
 
   /// USED IN PRODUCTION
@@ -533,6 +622,40 @@ export default class Home extends Vue {
     }
   }
 
+  startShutDown() {
+    this.shutdownDialog = true;
+  }
+
+  stopShutDown() {
+    clearInterval(this.shutDownTimer);
+    this.shutdownDialog = false;
+  }
+
+  shutdown() {
+    console.log("Voting Process shut down");
+    // Send signal to clear all databases, everything goes back to 0;
+    this.shutdownDialog = false;
+    this.votingShutdown = true;
+
+    /// DEVELOPMENT PURPOSES
+    clearInterval(this.votingSimulator);
+    /// DEVELOPMENT PURPOSES
+  }
+
+  start() {
+    console.log("Voting Process start");
+    this.openToast("Voting process started");
+    this.votingShutdown = false;
+    // Sends signal to everyone, and now votes are allowed to come in
+
+    /// DEVELOPMENT PURPOSES
+    this.votingSimulator = setInterval(() => {
+      /// user this.pulseProcessor(category) in PROD
+      this.streamSimulator();
+    }, 5000);
+    /// DEVELOPMENT PURPOSES
+  }
+
   confirm(data) {
     //// Confirmed
     this.dialog = false;
@@ -644,6 +767,12 @@ export default class Home extends Vue {
           }
         }, 300);
       }
+    }
+
+    if (data.shutdown === true) {
+      this.startShutDown();
+    } else if (data.shutdown === false) {
+      this.start();
     }
   }
 
@@ -847,7 +976,11 @@ export default class Home extends Vue {
     this.final = false;
     this.totalChanges = [];
     if (e) {
-      console.log("Final notifications to send", this.notifications);
+      this.startLoading("Submitting your final changes");
+      setTimeout(() => {
+        this.stopLoading();
+        console.log("Final notifications to send", this.notifications);
+      }, 3000);
     }
   }
 
@@ -855,8 +988,8 @@ export default class Home extends Vue {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
 
-  shutdownVotingProcess() {
-    this.openPrompt({ shutdown: true });
+  votingProcess(status) {
+    this.openPrompt({ shutdown: status });
   }
 }
 </script>
@@ -975,12 +1108,16 @@ export default class Home extends Vue {
   cursor: pointer;
 }
 
-.scroll-down-btn {
+.logout-btn {
   bottom: 150px !important;
 }
 
+.scroll-down-btn {
+  bottom: 250px !important;
+}
+
 .refresh-btn {
-  bottom: 240px !important;
+  bottom: 350px !important;
 }
 
 .custom-loader {
