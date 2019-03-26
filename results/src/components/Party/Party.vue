@@ -7,10 +7,14 @@
         <v-icon
           :color="data.increase >= 0? 'success' : 'warning'"
         >{{data.increase >= 0? 'trending_up' : 'trending_down'}}</v-icon>
-        <span
-          class="total-category-votes"
-          :class="data.increase >= 0? 'success--text' : 'warning--text'"
-        >{{data.increase}}%</span>
+
+        <transition name="slide-fade" mode="out-in">
+          <span
+            :key="data.increase"
+            class="total-category-votes"
+            :class="data.increase >= 0? 'success--text' : 'warning--text'"
+          >{{data.increase}}%</span>
+        </transition>
       </span>
     </div>
     <div class="party-body">
@@ -30,11 +34,22 @@
       </v-list>
     </div>
     <div class="party-footer pa-2">
-      <span class="bolder">{{data.currentVotes.toLocaleString()}} votes</span>
+      <transition name="slide-fade" mode="out-in">
+        <span
+          class="bolder"
+          :key="data.currentPercentage"
+        >{{data.currentVotes.toLocaleString()}} votes</span>
+      </transition>
       <v-spacer></v-spacer>
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <span v-on="on" class="error--text total-category-votes">{{data.currentPercentage}}%</span>
+          <transition name="slide-fade" mode="out-in">
+            <span
+              v-on="on"
+              :key="data.currentPercentage"
+              class="error--text total-category-votes"
+            >{{data.currentPercentage}}%</span>
+          </transition>
         </template>
         <span>of all parties votes combined</span>
       </v-tooltip>

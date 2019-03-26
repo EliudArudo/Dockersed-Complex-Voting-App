@@ -6,23 +6,38 @@
       </div>
 
       <div class="ml-3 black--text total-category-votes">
-        <span>{{humanize(data.currentVotes)}} votes</span>
+        <transition name="slide-fade" mode="out-in">
+          <span :key="data.currentVotes">{{humanize(data.currentVotes)}} votes</span>
+        </transition>
       </div>
 
       <div class="ml-3">
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
-            <span v-on="on" class="error--text total-category-votes">{{data.currentPercentage}}%</span>
+            <transition name="slide-fade" mode="out-in">
+              <span
+                v-on="on"
+                :key="data.currentPercentage"
+                class="error--text total-category-votes"
+              >{{data.currentPercentage}}%</span>
+            </transition>
           </template>
           <span>of all categories' votes combined</span>
         </v-tooltip>
       </div>
 
-      <div class="ml-3" :class="data.increase >= 0? 'success--text' : 'warning--text'">
+      <div
+        class="ml-3"
+        :class="data.increase === 0? 'gray--text' : data.increase > 0? 'success--text' : 'warning--text'"
+      >
         <v-icon
-          :color="data.increase >= 0? 'success' : 'warning'"
+          v-if="data.increase !== 0"
+          :color="data.increase > 0? 'success' : 'warning'"
         >{{data.increase >= 0? 'trending_up' : 'trending_down'}}</v-icon>
-        <span class="total-category-votes">{{data.increase}}%</span>
+
+        <transition name="slide-fade" mode="out-in">
+          <span :key="data.increase" class="total-category-votes">{{data.increase}}%</span>
+        </transition>
       </div>
     </div>
     <div class="category-body">

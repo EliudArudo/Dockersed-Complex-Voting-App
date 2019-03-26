@@ -117,7 +117,6 @@
 </template>
 
 <script>
-/// Add Login-Screen
 
 // Incoming votes are inform of "Category object", then run this.pulseProcessor(Category)
 
