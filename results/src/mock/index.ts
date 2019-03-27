@@ -70,5 +70,29 @@ export const categories = [
                 currentVotes: 3400,
             }
         ]
+    },
+    {
+        name: 'Category X',
+        currentVotes: 72000,
+        candidates: [
+            {
+                name: 'Josiah Toby',
+                party: 'Party J',
+                picture: 'https://picsum.photos/300/300?image=472',
+                currentVotes: 17000,
+            },
+            {
+                name: 'Felix Historical',
+                party: 'Party X',
+                picture: 'https://picsum.photos/300/300?image=201',
+                currentVotes: 20000,
+            },
+            {
+                name: 'Allan McCarthy',
+                party: 'Party D',
+                picture: 'https://picsum.photos/300/300?image=55',
+                currentVotes: 55000,
+            }
+        ]
     }
 ];

@@ -2,7 +2,12 @@
   <div class="category" v-if="data">
     <div class="category-header primary--text">
       <div>
-        <span>{{data.name}}</span>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <span v-on="on">{{data.name}}</span>
+          </template>
+          <span>{{data.name !== data.originalName? `Previously '${data.originalName}'` : 'No name changes'}}</span>
+        </v-tooltip>
       </div>
 
       <div class="ml-3 black--text total-category-votes">
