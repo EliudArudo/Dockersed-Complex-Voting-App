@@ -75,6 +75,12 @@ votersRoom.on('connection', function (socket) {
     console.log('Someone connected to voting room');
     getSeedData('voters').then((data) => {
         socket.emit('seed-data', data)
+
+        if (!data.data || data.data.length === 0) {
+            votersRoom.emit('seed-data', data);
+        } else {
+            socket.emit('seed-data', data);
+        }
     }).catch(e => {
         console.log(e);
     })
@@ -83,7 +89,12 @@ votersRoom.on('connection', function (socket) {
 adminRoom.on('connection', function (socket) {
     console.log('Someone connected to admin room');
     getSeedData('admin').then((data) => {
-        socket.emit('seed-data', data)
+
+        if (!data.data || data.data.length === 0) {
+            adminRoom.emit('seed-data', data);
+        } else {
+            socket.emit('seed-data', data);
+        }
     }).catch(e => {
         console.log(e);
     })
@@ -92,7 +103,12 @@ adminRoom.on('connection', function (socket) {
 resultsRoom.on('connection', function (socket) {
     console.log('Someone connected to results room');
     getSeedData('results').then((data) => {
-        socket.emit('seed-data', data)
+        if (!data.data || data.data.length === 0) {
+            resultsRoom.emit('seed-data', data);
+        } else {
+            socket.emit('seed-data', data);
+        }
+
     }).catch(e => {
         console.log(e);
     })

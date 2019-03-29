@@ -92,7 +92,7 @@ import SubmitChangeDialog from "@/components/SubmitChangeDialog.vue";
 import { categories as cats } from "@/mock/index.ts";
 import { categories } from "../../../admin/src/mock/data";
 
-import {socket} from '@/connection/index.ts';
+import { socket } from "@/connection/index.ts";
 
 @Component({
   components: {
@@ -138,20 +138,27 @@ export default class Home extends Vue {
 
   mounted() {
     // Mounted refreshes everything without newInfo
-    
+
     const data = this.$route.params.data;
     this.refreshAllData(data);
 
     socket.on("update", data => {
       console.log(`'${data.type} update just came in'`, { data });
-      
-      if(data.type === 'notification'){
-         this.updateProcessor(data.data);
-      } else if(data.type === 'pulse') {
+
+      if (data.type === "notification") {
+        this.updateProcessor(data.data);
+      } else if (data.type === "pulse") {
         this.pulseProcessor(data.data);
       }
     });
 
+    socket.on("seed-data", data => {
+      console.log(`Seed data came in`, { data });
+
+      if (!data.data || data.data.length === 0) {
+        this.$router.push({ name: "splashscreen" });
+      }
+    });
 
     //  --------- UNCOMMENT TO START INCOMING VOTES LIVE UPDATES ------
     // setTimeout(() => {
