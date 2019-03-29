@@ -38,7 +38,9 @@ export default class SplashScreen extends Vue {
     });
     socket.on("seed-data", data => {
       console.log("seed-data just came through", { data });
-      this.$router.push({ name: "home", params: { data: data.data } });
+      if (!data.data || data.data.length > 0) {
+        this.$router.push({ name: "home", params: { data: data.data } });
+      }
     });
   }
 }

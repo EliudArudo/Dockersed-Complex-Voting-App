@@ -31,6 +31,7 @@ app.post('/get-seed-data', (req, res) => {
         return;
     }
 
+    /// Check shutdown status, if shutdown active, send [] 
     /// Get seed data from redis and send back
 });
 

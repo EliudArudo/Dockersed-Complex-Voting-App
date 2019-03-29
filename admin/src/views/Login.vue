@@ -155,7 +155,7 @@ export default class LoginPage extends Vue {
       .then(res => {
         //// Requests to the server done here
         this.stopLoading();
-        if (this.seed_data) {
+        if (this.seed_data || this.seed_data.length > 0) {
           this.$router.push({ name: "home", params: this.seed_data });
         } else {
           this.openToast("No seed data yet, please try again later");
