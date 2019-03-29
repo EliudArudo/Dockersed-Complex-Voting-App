@@ -117,7 +117,6 @@
 </template>
 
 <script>
-
 // Incoming votes are inform of "Category object", then run this.pulseProcessor(Category)
 
 // On Submitting changes, on success, we'll receive an entire "Categories Object" -> All our categories, from where we can start again
@@ -142,6 +141,10 @@ import Loading from "@/components/Loading.vue";
 import { categories, originalcategories } from "@/mock/data.ts";
 
 import TopComponent from "vue-class-component";
+
+import * as axios from "axios";
+
+import { socket } from "@/components/connection/index.ts";
 
 TopComponent.registerHooks([
   "beforeRouteEnter",
@@ -329,8 +332,13 @@ export default class Home extends Vue {
   }
 
   mounted() {
-    this.categories = JSON.parse(JSON.stringify(categories));
-    this.backup_categories = JSON.parse(JSON.stringify(categories));
+    // this.categories = JSON.parse(JSON.stringify(categories));
+    // this.backup_categories = JSON.parse(JSON.stringify(categories));
+
+    this.categories = SON.parse(JSON.stringify(this.$route.params.data));
+    this.backup_categories = JSON.parse(
+      JSON.stringify(this.$route.params.data)
+    );
 
     this.categories = this.categories.map(item => {
       item.originalName = item.name;
@@ -341,6 +349,11 @@ export default class Home extends Vue {
       });
 
       return item;
+    });
+
+    socket.on("update", data => {
+      console.log(`'${data.type} update just came in'`, { data });
+      this.pulseProcessor(data.data);
     });
 
     //  --------- UNCOMMENT TO START INCOMING VOTES LIVE UPDATES ------
@@ -636,9 +649,11 @@ export default class Home extends Vue {
     this.shutdownDialog = false;
     this.votingShutdown = true;
 
-    /// DEVELOPMENT PURPOSES
-    clearInterval(this.votingSimulator);
-    /// DEVELOPMENT PURPOSES
+
+    // /// DEVELOPMENT PURPOSES
+    // clearInterval(this.votingSimulator);
+    // /// DEVELOPMENT PURPOSES
+    this.$router.push({name: 'login'});
   }
 
   start() {
@@ -769,9 +784,38 @@ export default class Home extends Vue {
     }
 
     if (data.shutdown === true) {
-      this.startShutDown();
+      axios
+        .default({
+          method: "post",
+          url: "/manager/admin-in",
+          data: { shutdown: data.shutdown }
+        })
+        .then(() => {
+          this.stopLoading();
+          this.startShutDown();
+        })
+        .catch(e => {
+          this.stopLoading();
+          console.log(e);
+          this.openToast(e.response ? e.response.data : e);
+        });
     } else if (data.shutdown === false) {
       this.start();
+      axios
+        .default({
+          method: "post",
+          url: "/manager/admin-in",
+          data: { shutdown: data.shutdown }
+        })
+        .then(() => {
+          this.stopLoading();
+          this.start();
+        })
+        .catch(e => {
+          this.stopLoading();
+          console.log(e);
+          this.openToast(e.response ? e.response.data : e);
+        });
     }
   }
 
@@ -976,10 +1020,21 @@ export default class Home extends Vue {
     this.totalChanges = [];
     if (e) {
       this.startLoading("Submitting your final changes");
-      setTimeout(() => {
-        this.stopLoading();
-        console.log("Final notifications to send", this.notifications);
-      }, 3000);
+      axios
+        .default({
+          method: "post",
+          url: "/manager/admin-in",
+          data: { notifications: this.notifications }
+        })
+        .then(() => {
+          this.stopLoading();
+          this.openToast("Thanks, Patriot!!!");
+        })
+        .catch(e => {
+          this.stopLoading();
+          console.log(e);
+          this.openToast(e.response ? e.response.data : e);
+        });
     }
   }
 

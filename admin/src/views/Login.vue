@@ -41,6 +41,9 @@
 import { Vue, Component, Watch } from "vue-property-decorator";
 import Loading from "@/components/Loading.vue";
 
+import * as axios from "axios";
+import { socket } from "@/connection/index.ts";
+
 @Component({
   components: {
     Loading
@@ -64,6 +67,8 @@ export default class LoginPage extends Vue {
 
   emailMin = 13;
   passwordMin = 6;
+
+  seed_data = null;
 
   loadingMessage = null;
   snackMessage_ = false;
@@ -92,9 +97,14 @@ export default class LoginPage extends Vue {
   }
 
   mounted() {
-    // setTimeout(() => {
-    //   this.$router.push({ name: "home" });
-    // }, 4000);
+    socket.on("connect", () => {
+      console.log("Admin connected to server");
+    });
+
+    socket.on("seed-data", data => {
+      console.log("seed-data just came through", { data });
+      this.seed_data = data.data;
+    });
   }
 
   startLoading(message) {
@@ -136,13 +146,28 @@ export default class LoginPage extends Vue {
 
     this.startLoading("Logging you in");
 
-    //// Requests to the server done here
-    setTimeout(() => {
-      this.stopLoading();
+    axios
+      .default({
+        method: "post",
+        url: "/manager/admin-login",
+        data
+      })
+      .then(res => {
+        //// Requests to the server done here
+        this.stopLoading();
+        if (this.seed_data) {
+          this.$router.push({ name: "home", params: this.seed_data });
+        } else {
+          this.openToast("No seed data yet, please try again later");
+        }
+        //// Requests to the server done here
+      })
+      .catch(e => {
+        const message = e.response ? e.response.data : e;
 
-      this.$router.push({ name: "home" });
-    }, 7000);
-    //// Requests to the server done here
+        this.stopLoading();
+        this.openToast(e);
+      });
   }
 }
 </script>

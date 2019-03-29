@@ -21,6 +21,8 @@
 import { Vue, Component } from "vue-property-decorator";
 import Spinner from "vue-spinner/src/BeatLoader.vue";
 
+import { socket } from "@/connection/index.ts";
+
 @Component({
   components: {
     Spinner
@@ -28,9 +30,16 @@ import Spinner from "vue-spinner/src/BeatLoader.vue";
 })
 export default class SplashScreen extends Vue {
   mounted() {
-    setTimeout(() => {
-      this.$router.push({ name: "home" });
-    }, 4000);
+    // -> ws is the route to ws-server
+
+    // get seed data here first
+    socket.on("connect", () => {
+      console.log("Voter connected to ws-server");
+    });
+    socket.on("seed-data", data => {
+      console.log("seed-data just came through", { data });
+      this.$router.push({ name: "home", params: { data: data.data } });
+    });
   }
 }
 </script>

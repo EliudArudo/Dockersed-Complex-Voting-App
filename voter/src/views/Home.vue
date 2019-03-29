@@ -33,7 +33,15 @@
             ></v-text-field>
           </div>
           <div class="button">
-            <v-btn class="pa-0" flat large color="primary" @click="vote">VOTE</v-btn>
+            <v-btn
+              class="pa-0"
+              flat
+              large
+              color="primary"
+              :loading="loadingBtn"
+              :disabled="loadingBtn"
+              @click="vote"
+            >VOTE</v-btn>
           </div>
         </div>
       </v-footer>
@@ -64,9 +72,6 @@
 </template>
 
 <script>
-//// Today - get pictures working with base64 strings
-///         - add home route to lazy loading
-
 /// Notifications
 /// Category added
 /// { category: 'name', type: 'add', candidates: [{name: 'name', picture: 'picture', party: 'party'}, {name: 'name', picture: 'picture', party: 'party'}]}
@@ -79,8 +84,12 @@
 
 import { Component, Vue, Watch } from "vue-property-decorator";
 
+import * as axios from "axios";
+
 import Spinner from "vue-spinner/src/BeatLoader.vue";
 import CategoryCard from "@/components/Category.vue";
+
+import { socket } from "@/component/connection/index.ts";
 
 @Component({
   components: {
@@ -94,6 +103,7 @@ export default class Home extends Vue {
   items_notification_ = [];
 
   loading = false;
+  loadingBtn = false;
 
   id = "";
   inputRules = [v => !!v || "ID is required"];
@@ -298,8 +308,6 @@ export default class Home extends Vue {
       }
     ];
 
-    this.categories = categories;
-
     const notifications = [
       {
         category: "Pastors",
@@ -337,20 +345,29 @@ export default class Home extends Vue {
       }
     ];
 
-    setTimeout(() => {
-      notifications.forEach((notification, index, array) => {
-        if (index === 0) {
-          this.loading = true;
-        }
-        setTimeout(() => {
-          this.notificationProcessor(notification);
+    // setTimeout(() => {
+    //   notifications.forEach((notification, index, array) => {
+    //     if (index === 0) {
+    //       this.loading = true;
+    //     }
+    //     setTimeout(() => {
+    //       this.notificationProcessor(notification);
 
-          if (index === array.length - 1) {
-            this.loading = false;
-          }
-        }, 3000 * (index + 1));
-      });
-    }, 7700);
+    //       if (index === array.length - 1) {
+    //         this.loading = false;
+    //       }
+    //     }, 3000 * (index + 1));
+    //   });
+    // }, 7700);
+
+    // Get seed data from route params
+    // this.categories = categories;
+    this.categories = this.$route.params.data;
+
+    socket.on("update", data => {
+      console.log(`'${data.type} update just came in'`, { data });
+      this.notificationProcessor(data.data);
+    });
   }
 
   alert() {
@@ -471,9 +488,26 @@ export default class Home extends Vue {
       return;
     }
 
-    console.log(voteObject);
-    this.$refs.id_input.reset();
-    this.openToast("Thanks, Patriot!!!");
+    console.log("Final voteObject submission",voteObject);
+
+    this.loadingBtn = true;
+
+    axios
+      .default({
+        method: "post",
+        url: "/manager/voter-in",
+        data: voteObject
+      })
+      .then(() => {
+        this.loadingBtn = false;
+        this.$refs.id_input.reset();
+        this.openToast("Thanks, Patriot!!!");
+      })
+      .catch(e => {
+        this.loadingBtn = false;
+        console.log(e);
+        this.openToast(e.response ? e.response.data : e);
+      });
   }
 }
 </script>

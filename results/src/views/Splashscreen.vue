@@ -9,14 +9,25 @@
 <script>
 import { Vue, Component } from "vue-property-decorator";
 
+import { socket } from "@/connection/index.ts";
+
 @Component({
   components: {}
 })
 export default class SplashScreen extends Vue {
   mounted() {
-    setTimeout(() => {
-      this.$router.push({ name: "home" });
-    }, 8000);
+    // setTimeout(() => {
+    //   this.$router.push({ name: "home" });
+    // }, 8000);
+
+    socket.on("connect", () => {
+      console.log("Resultss connected to ws-server");
+    });
+
+    socket.on("seed-data", data => {
+      console.log("seed-data just came through", { data });
+      this.$router.push({ name: "home", params: { data: data.data } });
+    });
   }
 }
 </script>
