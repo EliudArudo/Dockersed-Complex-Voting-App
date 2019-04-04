@@ -118,7 +118,7 @@ resultsRoom.on('connection', function (socket) {
 // adminRoom.emit('seed', data);
 // resultsRoom.emit('seed', data);
 
-app.on('/ws-updates', (req, res) => {
+app.post('/ws-updates', (req, res) => {
     // req.body has -> {room: '', type:'pulse/notification', data}
     // pulse is category object with current votes
     // notification is update notifications
@@ -143,6 +143,19 @@ app.on('/ws-updates', (req, res) => {
 
     res.send('Successful');
 });
+
+app.post('/shutdown', (req, res) => {
+
+    if (req.body.shutdown === true) {
+        resultsRoom.emit('seed-data', { data: null });
+        adminRoom.emit('seed-data', { data: null });
+        votersRoom.emit('seed-data', { data: null });
+    }
+
+    res.send('OK');
+
+});
+
 
 server.listen(port, () => {
     console.log(`Server running on port ${port}`)

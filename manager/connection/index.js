@@ -12,6 +12,12 @@ const redisClient = redis.createClient({
 redisClient.get = util.promisify(redisClient.get);
 redisClient.hget = util.promisify(redisClient.hget);
 
+
+const redisPublisher = redisClient.duplicate();
+const redisSubscriber = redisClient.duplicate();
+
 module.exports = {
-    redisClient
+    redisClient,
+    redisPublisher,
+    redisSubscriber
 }
