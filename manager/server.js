@@ -37,10 +37,10 @@ const notificationBuffer = [];
 const pulseBuffer = [];
 
 // On initialisation, publish for seed-data and wait for response
-redisPublisher.publish('seed-data', { seedData: 'voters' });
-redisPublisher.publish('seed-data', { seedData: 'admin' });
-redisPublisher.publish('seed-data', { seedData: 'results' });
-redisPublisher.publish('voterIds', { voterIds: true });
+redisPublisher.publish('worker', { message: 'seed-data', data: { seedData: 'voters' } });
+redisPublisher.publish('worker', { message: 'seed-data', data: { seedData: 'admin' } });
+redisPublisher.publish('worker', { message: 'seed-data', data: { seedData: 'results' } });
+redisPublisher.publish('worker', { message: 'voterIds', data: { voterIds: true } });
 
 // ----- redisEvents ------ //
 redisSubscriber.on('message', (channel, message) => {
@@ -50,12 +50,12 @@ redisSubscriber.on('message', (channel, message) => {
             await axios.default({
                 method: 'post',
                 url: `${env.WSSERVER}/shutdown`,
-                data: { shutdown: message.data.status }
+                data: { shutdown: message.status }
             });
             break;
         case 'seed-data':
             // Should update frequently (on every admin and voter update)
-            seedData[message.data.type] = message.data.data;
+            seedData[message.type] = message.data;
             break;
         case 'voterIds':
             voterIds = message.data;
@@ -65,7 +65,7 @@ redisSubscriber.on('message', (channel, message) => {
         case 'update':
             // Should update frequently (on every admin and voter update)
             if (message.data.type === 'pulse') {
-                pulseBuffer.push(message.data.data);
+                pulseBuffer.push(message.data);
 
                 if (pulseBuffer.length === 10) {
                     await axios.default({
@@ -149,10 +149,11 @@ app.post('/voter-in', async (req, res) => {
         // If no
         //// send this info to worker - who should send back data through pub-sub
         // return ok status
-        redisPublisher.publish('update', {
-            update: true,
-            type: 'voters',
-            data: { ...req.body }
+        redisPublisher.publish('worker', {
+            message: 'update', data: {
+                type: 'voters',
+                data: { ...req.body }
+            }
         });
 
         return res.send('Great!!!');
@@ -175,7 +176,7 @@ app.post('/admin-in', async (req, res) => {
         // --> Send signal to worker to --> Clear all databases
         // --> Send request to ws-server to shutdown everything
         if (req.body.shutdown) {
-            redisClient.publish('shutdown', { shutdown: req.body.shutdown });
+            redisClient.publish('worker', { message: 'shutdown', data: { shutdown: req.body.shutdown } });
 
             await axios.default({
                 method: 'post',
@@ -185,9 +186,9 @@ app.post('/admin-in', async (req, res) => {
 
 
         } else {
-            // Admin in object is [{ category: 'A', type: 'Add', candidates: [...]}]
+            // Admin in object isarray object of  [{ category: 'A', type: 'Add', candidates: [...]}]
             //// send this info to worker - who should send back data through pub-sub
-            redisClient.publish('update', { update: true, type: 'admin', data: req.body.notifications });
+            redisClient.publish('worker', { message: 'update', data: { type: 'admin', data: req.body.notifications } });
 
         }
 
