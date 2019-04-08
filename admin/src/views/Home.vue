@@ -196,6 +196,8 @@ export default class Home extends Vue {
 
   final = false;
 
+  token = null;
+
   votingShutdown = true;
   shutdownDialog = false;
   shutDownTimer = null;
@@ -277,6 +279,13 @@ export default class Home extends Vue {
     this.loader = null;
   }
 
+  @Watch("token")
+  tokenChanged(val) {
+    if (!val) {
+      this.$router.push({ name: "login" });
+    }
+  }
+
   @Watch("notifications", { deep: true })
   onNotificationChanged(val) {
     // console.log("Notifications changed", val);
@@ -339,6 +348,8 @@ export default class Home extends Vue {
     this.backup_categories = JSON.parse(
       JSON.stringify(this.$route.params.data)
     );
+
+    this.token = this.$route.params.token;
 
     this.categories = this.categories.map(item => {
       item.originalName = item.name;
@@ -649,11 +660,10 @@ export default class Home extends Vue {
     this.shutdownDialog = false;
     this.votingShutdown = true;
 
-
     // /// DEVELOPMENT PURPOSES
     // clearInterval(this.votingSimulator);
     // /// DEVELOPMENT PURPOSES
-    this.$router.push({name: 'login'});
+    this.$router.push({ name: "login" });
   }
 
   start() {
@@ -783,6 +793,10 @@ export default class Home extends Vue {
       }
     }
 
+    axios.default.defaults.headers.common["Authorization"] = `bearer ${
+      this.token
+    }`;
+
     if (data.shutdown === true) {
       axios
         .default({
@@ -800,7 +814,8 @@ export default class Home extends Vue {
           this.openToast(e.response ? e.response.data : e);
         });
     } else if (data.shutdown === false) {
-      this.start();
+      // this.start(); -> Was for simulation purposes
+      // If false - do nothing, just unlock and start
       axios
         .default({
           method: "post",

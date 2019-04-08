@@ -1,4 +1,5 @@
 const express = require('express');
+const passport = require('passport');
 const cors = require('cors');
 const bodyParser = require('body-parser')
 const axios = require('axios');
@@ -6,12 +7,18 @@ const axios = require('axios');
 const { redisClient, redisPublisher, redisSubscriber } = require('./connection')
 const env = require('./env');
 
+const sign = require('./passport/jwt-sign');
+
 const port = 5005;
 
 const app = express();
 
 app.use(cors());
 app.use(bodyParser.json());
+
+require('./passport/jwt-strategy');
+
+app.use(passport.initialize());
 
 // Requests IN + RES
 // Voter
@@ -129,12 +136,25 @@ app.post('/get-seed-data', (req, res) => { // Might need a direct route
         return;
     }
 
-    res.send({ data: seedData[req.body.type] });
+    redisPublisher.publish('worker', { message: 'seed-data', data: { seedData: 'voters' } });
+    redisPublisher.publish('worker', { message: 'seed-data', data: { seedData: 'admin' } });
+    redisPublisher.publish('worker', { message: 'seed-data', data: { seedData: 'results' } });
+
+    if (process.env.VOTING_ACTIVE) {
+        res.send({ data: seedData[req.body.type] });
+    } else {
+        res.send({ data: [] });
+    }
 });
 
 app.post('/voter-in', async (req, res) => {
     if (!req.body || !req.body.id) {
         res.status(401).send('Body or id is missing in request body')
+        return;
+    }
+
+    if (!process.env.VOTING_ACTIVE) {
+        res.status(403).send('Voting process stopped');
         return;
     }
 
@@ -165,7 +185,30 @@ app.post('/voter-in', async (req, res) => {
 
 });
 
-app.post('/admin-in', async (req, res) => {
+app.post('/admin-login', (req, res) => {
+    if (!req.body) { // --> body contains either notifications or shutdown
+        res.status(401).send('Request body does not contain anything');
+        return;
+    }
+
+    if (req.body.email !== env.ADMIN_EMAIL || req.body.password !== env.ADMIN_PASSWORD) {
+        res.status(401).send("You're not admin!!!");
+        return;
+    }
+
+    /// Send a token which will be used
+    const { email, password } = req.body;
+    sign(email, password).then(token => {
+        res.send({ token });
+    }).catch(e => {
+        res.status(500).send(e);
+    })
+
+});
+
+app.post('/admin-in', passport.authenticate('jwt', {
+    session: false
+}), async (req, res) => {
     if (!req.body) { // --> body contains either notifications or shutdown
         res.status(401).send('Body or notifications is missing in request body')
         return;
@@ -175,7 +218,8 @@ app.post('/admin-in', async (req, res) => {
         // Admin can shut down voting process or make changes
         // --> Send signal to worker to --> Clear all databases
         // --> Send request to ws-server to shutdown everything
-        if (req.body.shutdown) {
+        if (req.body.hasOwnProperty('shutdown')) {
+
             redisClient.publish('worker', { message: 'shutdown', data: { shutdown: req.body.shutdown } });
 
             await axios.default({
@@ -184,6 +228,7 @@ app.post('/admin-in', async (req, res) => {
                 data: { shutdown: req.body.shutdown }
             });
 
+            process.env.VOTING_ACTIVE = req.body.shutdown;
 
         } else {
             // Admin in object isarray object of  [{ category: 'A', type: 'Add', candidates: [...]}]
@@ -192,7 +237,9 @@ app.post('/admin-in', async (req, res) => {
 
         }
 
-        return res.send('OK');
+        const { email, password } = req.body.user;
+
+        sign(email, password).then(token => res.send({ token })).catch(e => res.status(500).send(e));
 
     } catch (e) {
         console.log(e.response ? e.response.data : e);

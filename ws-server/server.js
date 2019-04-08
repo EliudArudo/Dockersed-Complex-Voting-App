@@ -61,7 +61,7 @@ async function getSeedData(type) {
         let res = await axios.default({
             method: 'post',
             url: `${env.MANAGER}/get-seed-data`,
-            data: type
+            data: { type }
         });
         res = res.data;
 
