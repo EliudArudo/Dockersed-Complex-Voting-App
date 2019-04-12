@@ -129,6 +129,10 @@ redisSubscriber.on('message', async (channel, message) => {
 redisSubscriber.subscribe('response');
 // ----- redisEvents ------ //
 
+app.get('/', (req, res) => {
+    res.send('manager healthy');
+});
+
 
 app.post('/get-seed-data', (req, res) => { // Might need a direct route
     if (!req.body || !req.body.type) {
@@ -186,6 +190,12 @@ app.post('/voter-in', async (req, res) => {
 });
 
 app.post('/admin-login', (req, res) => {
+    console.log('MANAGER: admin-in', {
+        emailIn: req.body.email,
+        passwordIn: req.body.password,
+        envEmail: env.ADMIN_EMAIL,
+        envPassword: env.ADMIN_PASSWORD,
+    });
     if (!req.body) { // --> body contains either notifications or shutdown
         res.status(401).send('Request body does not contain anything');
         return;

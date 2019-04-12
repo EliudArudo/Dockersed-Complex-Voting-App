@@ -103,7 +103,9 @@ export default class LoginPage extends Vue {
 
     socket.on("seed-data", data => {
       console.log("seed-data just came through", { data });
-      this.seed_data = data.data;
+      if (data) {
+        this.seed_data = data.data;
+      }
     });
   }
 
@@ -150,7 +152,10 @@ export default class LoginPage extends Vue {
       .default({
         method: "post",
         url: "/manager/admin-login",
-        data
+        data: {
+          email,
+          password
+        }
       })
       .then(res => {
         //// Requests to the server done here

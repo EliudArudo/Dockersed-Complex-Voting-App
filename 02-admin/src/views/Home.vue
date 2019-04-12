@@ -344,7 +344,7 @@ export default class Home extends Vue {
     // this.categories = JSON.parse(JSON.stringify(categories));
     // this.backup_categories = JSON.parse(JSON.stringify(categories));
 
-    this.categories = SON.parse(JSON.stringify(this.$route.params.data));
+    this.categories = JSON.parse(JSON.stringify(this.$route.params.data));
     this.backup_categories = JSON.parse(
       JSON.stringify(this.$route.params.data)
     );
@@ -364,7 +364,9 @@ export default class Home extends Vue {
 
     socket.on("update", data => {
       console.log(`'${data.type} update just came in'`, { data });
-      this.pulseProcessor(data.data);
+      if (data) {
+        this.pulseProcessor(data.data);
+      }
     });
 
     //  --------- UNCOMMENT TO START INCOMING VOTES LIVE UPDATES ------

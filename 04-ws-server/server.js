@@ -118,6 +118,10 @@ resultsRoom.on('connection', function (socket) {
 // adminRoom.emit('seed', data);
 // resultsRoom.emit('seed', data);
 
+app.get('/', (req, res) => {
+    res.send('ws-server healthy');
+});
+
 app.post('/ws-updates', (req, res) => {
     // req.body has -> {room: '', type:'pulse/notification', data}
     // pulse is category object with current votes
