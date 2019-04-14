@@ -12,6 +12,8 @@ const Candidate = require('./models/postgres/candidate');
 
 redisSubscriber.on('message', async (channel, message) => {
 
+  console.log('WORKER: Got message from MANAGER', { message });
+
   message = message.message;
   const data = message.data;
 
@@ -136,5 +138,4 @@ sequelize
     console.log('WORKER: Sequelize + postgres initialized');
   })
   .catch(console.log)
-
 

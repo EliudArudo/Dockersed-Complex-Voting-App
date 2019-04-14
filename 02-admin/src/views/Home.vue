@@ -360,8 +360,11 @@ export default class Home extends Vue {
       return item;
     });
 
+    // Will add 'seed-data' listener later
     socket.on("update", data => {
-      if (data) {
+      console.log("ADMIN: Got new Updates from WS-SERVER", { data });
+
+      if (data && data.data) {
         this.pulseProcessor(data.data);
       }
     });
@@ -786,6 +789,10 @@ export default class Home extends Vue {
       }
     }
 
+    console.log(`ADMIN: About to submit shutdown data to MANAGER`, {
+      shutdown: data.shutdown
+    });
+
     axios.default.defaults.headers.common["Authorization"] = `bearer ${
       this.token
     }`;
@@ -1027,6 +1034,10 @@ export default class Home extends Vue {
     this.final = false;
     this.totalChanges = [];
     if (e) {
+      console.log(`ADMIN: About to submit changes data to MANAGER`, {
+        notifications: this.notifications
+      });
+
       this.startLoading("Submitting your final changes");
       axios
         .default({
@@ -1036,7 +1047,7 @@ export default class Home extends Vue {
         })
         .then(() => {
           this.stopLoading();
-          this.openToast("Thanks, Patriot!!!");
+          this.openToast("You're welcome!!!");
         })
         .catch(e => {
           this.stopLoading();

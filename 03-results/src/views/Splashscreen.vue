@@ -16,10 +16,14 @@ import { socket } from "../connection/index.ts";
 })
 export default class SplashScreen extends Vue {
   mounted() {
-    socket.on("connect", () => {});
+    socket.on("connect", () => {
+      console.log("RESULTS: Successfully connected to WS-SERVER");
+    });
 
     socket.on("seed-data", data => {
-      if (!data.data || data.data.length > 0) {
+      console.log("RESULTS: Got seed data from WS-SERVER", { data });
+
+      if (data && data.data && data.data.length > 0) {
         this.$router.push({ name: "home", params: { data: data.data } });
       }
     });

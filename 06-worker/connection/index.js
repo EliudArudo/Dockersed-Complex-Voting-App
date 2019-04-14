@@ -1,9 +1,12 @@
 const redis = require('redis');
 const Sequelize = require('sequelize');
+const mongoose = require('mongoose');
 
 const util = require('util');
 
-const { REDIS_HOST, REDIS_PORT, PG_HOST, PG_USER, PG_PASSWORD, PG_DATABASE, PG_PORT } = require('../env');
+const { REDIS_HOST, REDIS_PORT, PG_HOST, PG_USER, PG_PASSWORD, PG_DATABASE, PG_PORT, MONGO_URI, MONGO_PORT, MONGO_DB } = require('../env');
+
+mongoose.Promise = global.Promise;
 
 const sequelize = new Sequelize(PG_DATABASE, PG_USER, PG_PASSWORD, {
     dialect: 'postgres',
@@ -11,6 +14,20 @@ const sequelize = new Sequelize(PG_DATABASE, PG_USER, PG_PASSWORD, {
     port: PG_PORT
 });
 
+const mongoURI = `mongodb://${MONGO_URI}:${MONGO_PORT}/${MONGO_DB}`;
+
+mongoose.connect(mongoURI, {
+    useNewUrlParser: true,
+    reconnectTries: 10,
+    reconnectInterval: 1000
+}, (err, db) => {
+    if (err) {
+        console.log(err);
+        process.exit(1);
+    }
+
+    console.log('WORKER: Mongodb connected');
+});
 
 const redisClient = redis.createClient({
     host: REDIS_HOST,

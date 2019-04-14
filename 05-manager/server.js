@@ -51,6 +51,10 @@ redisPublisher.publish('worker', { message: 'voterIds', data: { voterIds: true }
 
 // ----- redisEvents ------ //
 redisSubscriber.on('message', async (channel, message) => {
+
+
+    console.log('MANAGER: Got message from WORKER', { message });
+
     switch (message.type) {
         // message object is { type: '', data: object}
         case 'shutdown':
@@ -140,6 +144,11 @@ app.post('/get-seed-data', (req, res) => { // Might need a direct route
         return;
     }
 
+    console.log(`MANAGER: Requesting seed-data from WS-SERVER ---- '/get-seed-data' route, current 'process.env.VOTING_ACTIVE' value`, {
+        body: req.body,
+        activeStatus: process.env.VOTING_ACTIVE
+    });
+
     redisPublisher.publish('worker', { message: 'seed-data', data: { seedData: 'voters' } });
     redisPublisher.publish('worker', { message: 'seed-data', data: { seedData: 'admin' } });
     redisPublisher.publish('worker', { message: 'seed-data', data: { seedData: 'results' } });
@@ -156,6 +165,11 @@ app.post('/voter-in', async (req, res) => {
         res.status(401).send('Body or id is missing in request body')
         return;
     }
+
+    console.log(`MANAGER: Voter in data from VOTER client ---- '/voter-in' route, current 'process.env.VOTING_ACTIVE' value`, {
+        body: req.body,
+        activeStatus: process.env.VOTING_ACTIVE
+    });
 
     if (!process.env.VOTING_ACTIVE) {
         res.status(403).send('Voting process stopped');
@@ -195,6 +209,12 @@ app.post('/admin-login', (req, res) => {
         return;
     }
 
+    console.log(`MANAGER: Admin client trying to login ---- '/admin-login' route, current 'process.env.VOTING_ACTIVE' value`, {
+        body: req.body,
+        activeStatus: process.env.VOTING_ACTIVE
+    });
+
+
     if (req.body.email !== env.ADMIN_EMAIL || req.body.password !== env.ADMIN_PASSWORD) {
         res.status(401).send("You're not admin!!!");
         return;
@@ -205,6 +225,7 @@ app.post('/admin-login', (req, res) => {
     sign(email, password).then(token => {
         res.send({ token });
     }).catch(e => {
+        console.log(e);
         res.status(500).send(e);
     })
 
@@ -217,6 +238,11 @@ app.post('/admin-in', passport.authenticate('jwt', {
         res.status(401).send('Body or notifications is missing in request body')
         return;
     }
+
+    console.log(`MANAGER: Admin client submitting changes ---- '/admin-in' route, current 'process.env.VOTING_ACTIVE' value`, {
+        body: req.body,
+        activeStatus: process.env.VOTING_ACTIVE
+    });
 
     try {
         // Admin can shut down voting process or make changes
@@ -244,12 +270,15 @@ app.post('/admin-in', passport.authenticate('jwt', {
 
         const { email, password } = req.body.user;
 
-        sign(email, password).then(token => res.send({ token })).catch(e => res.status(500).send(e));
+        sign(email, password).then(token => res.send({ token })).catch(e => {
+            console.log(e);
+            res.status(500).send(e)
+        });
 
     } catch (e) {
         console.log(e.response ? e.response.data : e);
         /// Do not send anything
-        res.status(500).send('Server error, please try again later');
+        res.status(500).send('MANAGER: Server error, please try again later');
     }
 
 });

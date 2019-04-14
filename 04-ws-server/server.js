@@ -71,10 +71,12 @@ async function getSeedData(type) {
 }
 
 votersRoom.on('connection', function (socket) {
+    console.log(`WS-SERVER -> voters room: New connection '${socket.id}' connected`);
     getSeedData('voters').then((data) => {
-        socket.emit('seed-data', data)
 
-        if (!data.data || data.data.length === 0) {
+        console.log(`WS-SERVER -> voters room: Data got from MANAGER, about to be sent to VOTER of socket '${socket.id}'`, { data });
+
+        if (!data || !data.data || data.data.length === 0) {
             votersRoom.emit('seed-data', data);
         } else {
             socket.emit('seed-data', data);
@@ -85,7 +87,10 @@ votersRoom.on('connection', function (socket) {
 });
 
 adminRoom.on('connection', function (socket) {
+    console.log(`WS-SERVER -> admin room: New connection '${socket.id}' connected`);
     getSeedData('admin').then((data) => {
+
+        console.log(`WS-SERVER -> admin room: Data got from MANAGER, about to be sent to ADMIN of socket ${socket.id}`, { data });
 
         if (!data.data || data.data.length === 0) {
             adminRoom.emit('seed-data', data);
@@ -98,7 +103,10 @@ adminRoom.on('connection', function (socket) {
 });
 
 resultsRoom.on('connection', function (socket) {
+    console.log(`WS-SERVER -> results room: New connection '${socket.id}' connected`);
     getSeedData('results').then((data) => {
+
+        console.log(`WS-SERVER -> results room: Data got from MANAGER, about to be sent to RESULTS of socket ${socket.id}`, { data });
         if (!data.data || data.data.length === 0) {
             resultsRoom.emit('seed-data', data);
         } else {
@@ -127,6 +135,12 @@ app.post('/ws-updates', (req, res) => {
         return;
     }
 
+    console.log(`WS-SERVER: Update from MANAGER ---- '/ws-updates' route`, {
+        room: req.body.room,
+        type: req.body.type,
+        data: req.body.data
+    });
+
     let room;
     if (req.body.room === 'voters') {
         room = votingRoom;
@@ -136,8 +150,13 @@ app.post('/ws-updates', (req, res) => {
         room = resultsRoom;
     }
 
+    console.log(`WS-SERVER: About to send update to '${req.body.room}' room`, {
+        type: req.body.type, // either pulse or notification
+        data: req.body.data,
+    });
+
     room.emit('update', {
-        type: req.body.data, // either pulse or notification
+        type: req.body.type, // either pulse or notification
         data: req.body.data,
     });
 
@@ -145,6 +164,10 @@ app.post('/ws-updates', (req, res) => {
 });
 
 app.post('/shutdown', (req, res) => {
+
+    console.log(`WS-SERVER: Shutdown signal from MANAGER ---- '/shutdown' route`, {
+        shutdown: req.body.shutdown
+    });
 
     if (req.body.shutdown === true) {
         resultsRoom.emit('seed-data', { data: null });

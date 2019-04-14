@@ -142,15 +142,21 @@ export default class Home extends Vue {
     this.refreshAllData(data);
 
     socket.on("update", data => {
-      if (data.type === "notification") {
-        this.updateProcessor(data.data);
-      } else if (data.type === "pulse") {
-        this.pulseProcessor(data.data);
+      console.log("RESULTS: Got new Updates from WS-SERVER", { data });
+
+      if (data) {
+        if (data.type === "notification") {
+          this.updateProcessor(data.data);
+        } else if (data.type === "pulse") {
+          this.pulseProcessor(data.data);
+        }
       }
     });
 
     socket.on("seed-data", data => {
-      if (!data.data || data.data.length === 0) {
+      console.log("RESULTS: Got seed data from WS-SERVER -> after", { data });
+
+      if (!data || !data.data || data.data.length === 0) {
         this.$router.push({ name: "splashscreen" });
       }
     });

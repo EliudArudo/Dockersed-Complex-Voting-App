@@ -365,12 +365,17 @@ export default class Home extends Vue {
     this.categories = this.$route.params.data;
 
     socket.on("update", data => {
-      this.notificationProcessor(data.data);
+      console.log("VOTER: Got new Updates from WS-SERVER", { data });
+
+      if (data && data.data) {
+        this.notificationProcessor(data.data);
+      }
     });
 
     socket.on("seed-data", data => {
+      console.log("VOTER: Got seed data from WS-SERVER -> after", { data });
 
-      if (!data.data || data.data.length === 0) {
+      if (!data || !data.data || data.data.length === 0) {
         this.$router.push({ name: "splashscreen" });
       }
     });
@@ -493,6 +498,10 @@ export default class Home extends Vue {
       this.openToast("Please choose at least one candidate");
       return;
     }
+
+    console.log("VOTER: Voter data about to be submitted to MANAGER", {
+      data: voteObject
+    });
 
     this.loadingBtn = true;
 
