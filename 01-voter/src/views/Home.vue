@@ -365,12 +365,10 @@ export default class Home extends Vue {
     this.categories = this.$route.params.data;
 
     socket.on("update", data => {
-      console.log(`'${data.type} update just came in'`, { data });
       this.notificationProcessor(data.data);
     });
 
     socket.on("seed-data", data => {
-      console.log(`Seed data came in`, { data });
 
       if (!data.data || data.data.length === 0) {
         this.$router.push({ name: "splashscreen" });
@@ -495,8 +493,6 @@ export default class Home extends Vue {
       this.openToast("Please choose at least one candidate");
       return;
     }
-
-    console.log("Final voteObject submission", voteObject);
 
     this.loadingBtn = true;
 

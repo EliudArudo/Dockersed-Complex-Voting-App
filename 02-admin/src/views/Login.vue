@@ -97,12 +97,9 @@ export default class LoginPage extends Vue {
   }
 
   mounted() {
-    socket.on("connect", () => {
-      console.log("Admin connected to server");
-    });
+    socket.on("connect", () => {});
 
     socket.on("seed-data", data => {
-      console.log("seed-data just came through", { data });
       if (data) {
         this.seed_data = data.data;
       }

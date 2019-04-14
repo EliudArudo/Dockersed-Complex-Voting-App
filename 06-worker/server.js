@@ -133,7 +133,7 @@ redisSubscriber.subscribe('worker');
 sequelize
   .sync()
   .then(() => {
-    console.log('Sequelize + postgres initialized');
+    console.log('WORKER: Sequelize + postgres initialized');
   })
   .catch(console.log)
 

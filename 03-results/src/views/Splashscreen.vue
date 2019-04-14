@@ -16,12 +16,9 @@ import { socket } from "../connection/index.ts";
 })
 export default class SplashScreen extends Vue {
   mounted() {
-    socket.on("connect", () => {
-      console.log("Resultss connected to ws-server");
-    });
+    socket.on("connect", () => {});
 
     socket.on("seed-data", data => {
-      console.log("seed-data just came through", { data });
       if (!data.data || data.data.length > 0) {
         this.$router.push({ name: "home", params: { data: data.data } });
       }

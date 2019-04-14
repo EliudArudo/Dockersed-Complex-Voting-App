@@ -54,8 +54,6 @@ export default class UpdateCandidateComponent extends Vue {
   candidate_pic_ = null;
 
   created() {
-    console.log(this.candidateInfo);
-
     if (this.candidateInfo && this.candidateInfo.item) {
       this.candidate_name = { ...this.candidateInfo }.item.name || null;
       this.candidate_party = { ...this.candidateInfo }.item.party || null;
@@ -161,7 +159,6 @@ export default class UpdateCandidateComponent extends Vue {
               maxSize: 500
             })
               .then(resizedImage => {
-                console.log(resizedImage);
                 const file = new File([resizedImage], image.name);
                 resolve(file);
               })
@@ -186,11 +183,7 @@ export default class UpdateCandidateComponent extends Vue {
       reader.onloadend = () => {
         const base64data = reader.result;
         this.candidate_pic = base64data;
-        //// What we're saving is here!!!
-        // console.log(base64data);
       };
-
-      // console.log(pic);
     } catch (e) {
       console.log(e);
     }
@@ -230,8 +223,6 @@ export default class UpdateCandidateComponent extends Vue {
       this.$emit("notify", "A candidate with the same name already exists");
       return;
     }
-
-    console.log(this.candidateInfo);
 
     let data = { ...this.candidateInfo };
 

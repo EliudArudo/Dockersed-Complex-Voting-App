@@ -7,7 +7,6 @@
 // Create a namespace
 // var nsp = io.of('/my-namespace');
 // nsp.on('connection', function (socket) {
-//     console.log('someone connected');
 // });
 // nsp.emit('hi', 'everyone!');
 // ---> Create a namespace, or socket connecting, get and send seed data back (Just using axios)
@@ -72,7 +71,6 @@ async function getSeedData(type) {
 }
 
 votersRoom.on('connection', function (socket) {
-    console.log('Someone connected to voting room');
     getSeedData('voters').then((data) => {
         socket.emit('seed-data', data)
 
@@ -87,7 +85,6 @@ votersRoom.on('connection', function (socket) {
 });
 
 adminRoom.on('connection', function (socket) {
-    console.log('Someone connected to admin room');
     getSeedData('admin').then((data) => {
 
         if (!data.data || data.data.length === 0) {
@@ -101,7 +98,6 @@ adminRoom.on('connection', function (socket) {
 });
 
 resultsRoom.on('connection', function (socket) {
-    console.log('Someone connected to results room');
     getSeedData('results').then((data) => {
         if (!data.data || data.data.length === 0) {
             resultsRoom.emit('seed-data', data);
@@ -162,5 +158,5 @@ app.post('/shutdown', (req, res) => {
 
 
 server.listen(port, () => {
-    console.log(`Server running on port ${port}`)
+    console.log(`WS-SERVER: Server running on port ${port}`)
 });

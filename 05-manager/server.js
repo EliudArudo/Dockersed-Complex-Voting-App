@@ -190,12 +190,6 @@ app.post('/voter-in', async (req, res) => {
 });
 
 app.post('/admin-login', (req, res) => {
-    console.log('MANAGER: admin-in', {
-        emailIn: req.body.email,
-        passwordIn: req.body.password,
-        envEmail: env.ADMIN_EMAIL,
-        envPassword: env.ADMIN_PASSWORD,
-    });
     if (!req.body) { // --> body contains either notifications or shutdown
         res.status(401).send('Request body does not contain anything');
         return;
@@ -262,5 +256,5 @@ app.post('/admin-in', passport.authenticate('jwt', {
 
 
 app.listen(port, () => {
-    console.log(`Listening on port: ${port}`);
+    console.log(`MANAGER: Listening on port: ${port}`);
 })

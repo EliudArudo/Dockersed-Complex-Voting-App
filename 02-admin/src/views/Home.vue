@@ -287,9 +287,7 @@ export default class Home extends Vue {
   }
 
   @Watch("notifications", { deep: true })
-  onNotificationChanged(val) {
-    // console.log("Notifications changed", val);
-  }
+  onNotificationChanged(val) {}
 
   @Watch("candidate_dialog")
   onCandidateDialogOpened(val) {
@@ -363,7 +361,6 @@ export default class Home extends Vue {
     });
 
     socket.on("update", data => {
-      console.log(`'${data.type} update just came in'`, { data });
       if (data) {
         this.pulseProcessor(data.data);
       }
@@ -457,8 +454,6 @@ export default class Home extends Vue {
         setTimeout(() => {
           this.pulseAlert(`category${categoryIndex}card${candidateIndex}`);
         }, 300);
-
-        console.log(`'${this.categories[categoryIndex].name}' updated`);
 
         /// Imported from simulator
       } else {
@@ -579,8 +574,6 @@ export default class Home extends Vue {
         `category${randomCategoryNumber}card${randomCandidateNumber}`
       );
     }, 300);
-
-    console.log(`'${this.categories[randomCategoryNumber].name}' updated`);
   }
 
   generateRandomInteger(min, max) {
@@ -657,7 +650,6 @@ export default class Home extends Vue {
   }
 
   shutdown() {
-    console.log("Voting Process shut down");
     // Send signal to clear all databases, everything goes back to 0;
     this.shutdownDialog = false;
     this.votingShutdown = true;
@@ -669,7 +661,6 @@ export default class Home extends Vue {
   }
 
   start() {
-    console.log("Voting Process start");
     this.openToast("Voting process started");
     this.votingShutdown = false;
     // Sends signal to everyone, and now votes are allowed to come in

@@ -142,8 +142,6 @@ export default class Home extends Vue {
     this.refreshAllData(data);
 
     socket.on("update", data => {
-      console.log(`'${data.type} update just came in'`, { data });
-
       if (data.type === "notification") {
         this.updateProcessor(data.data);
       } else if (data.type === "pulse") {
@@ -152,8 +150,6 @@ export default class Home extends Vue {
     });
 
     socket.on("seed-data", data => {
-      console.log(`Seed data came in`, { data });
-
       if (!data.data || data.data.length === 0) {
         this.$router.push({ name: "splashscreen" });
       }
@@ -421,7 +417,6 @@ export default class Home extends Vue {
           filteredParty &&
           item.currentPercentage !== filteredParty.currentPercentage
         ) {
-          // console.log(item.currentPercentage, filteredParty.currentPercentage);
           item.increase =
             item.currentPercentage - filteredParty.currentPercentage;
         }
@@ -558,11 +553,6 @@ export default class Home extends Vue {
     };
 
     const updateArrays = ["add", "update1", "update2", "nameupdate", "deleteC"];
-
-    console.log(`Testing '${updateArrays[index]}' update`, {
-      updateObject: eval(updateArrays[index])
-    });
-
     this.updateProcessor(eval(updateArrays[index]));
   }
 
