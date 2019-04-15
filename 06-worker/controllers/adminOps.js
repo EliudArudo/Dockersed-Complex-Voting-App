@@ -180,6 +180,6 @@ module.exports = async (data) => {
         }
 
     } catch (e) {
-        return e;
+        throw new Error(e);
     }
 }

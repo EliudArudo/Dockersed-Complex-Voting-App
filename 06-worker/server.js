@@ -16,8 +16,8 @@ redisSubscriber.on('message', async (channel, message) => {
 
   console.log('WORKER: Got message from MANAGER', { message });
 
-  message = message.message;
   const data = message.data;
+  message = message.message;
 
 
   try {
@@ -135,6 +135,7 @@ redisSubscriber.on('message', async (channel, message) => {
 
   } catch (e) {
     console.log(e);
+    throw new Error(e);
   }
 
 });

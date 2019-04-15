@@ -23,6 +23,6 @@ module.exports = async (email, password) => {
         return token;
 
     } catch (e) {
-        return e;
+        throw new Error(e);
     }
 }

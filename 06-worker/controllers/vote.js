@@ -53,6 +53,6 @@ module.exports = async (data) => {
         return;
 
     } catch (e) {
-        return e;
+        throw new Error(e);
     }
 }

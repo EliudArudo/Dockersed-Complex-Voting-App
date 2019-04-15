@@ -86,13 +86,13 @@ const genSeedData = async (forWho) => {
                 }
 
             } catch (e) {
-                return e;
+                throw new Error(e);
             }
 
         });
 
     } catch (e) {
-        return e;
+        throw new Error(e);
     }
 
 }

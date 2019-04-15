@@ -7,7 +7,7 @@ const getHash = async (key1, key2) => {
 
         return res;
     } catch (e) {
-        return e;
+        throw new Error(e);
     }
 };
 
@@ -18,7 +18,7 @@ const get = async (key) => {
 
         return res;
     } catch (e) {
-        return e;
+        throw new Error(e);
     }
 };
 
@@ -30,7 +30,7 @@ const setHash = async (key1, key2, value) => {
 
         return OK;
     } catch (e) {
-        return e;
+        throw new Error(e);
     }
 };
 
@@ -42,7 +42,7 @@ const set = async (key, value) => {
 
         return res;
     } catch (e) {
-        return e;
+        throw new Error(e);
     }
 };
 
