@@ -23,7 +23,7 @@ mongoose.connect(mongoURI, {
 }, (err, db) => {
     if (err) {
         console.log(err);
-        process.exit(1);
+        // process.exit(1);
     }
 
     console.log('WORKER: Mongodb connected');
@@ -42,6 +42,11 @@ redisClient.hget = util.promisify(redisClient.hget);
 const redisPublisher = redisClient.duplicate();
 const redisSubscriber = redisClient.duplicate();
 
+redisClient.on('connect', function () {
+    console.log('WORKER: redis connected');
+}).on('error', function (error) {
+    console.log(error);
+});
 
 module.exports = {
     sequelize,

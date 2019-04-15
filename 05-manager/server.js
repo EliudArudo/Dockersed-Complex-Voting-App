@@ -4,7 +4,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser')
 const axios = require('axios');
 
-const { redisClient, redisPublisher, redisSubscriber } = require('./connection')
+const { redisPublisher, redisSubscriber } = require('./connection')
 const env = require('./env');
 
 const sign = require('./passport/jwt-sign');
@@ -44,14 +44,15 @@ const notificationBuffer = [];
 const pulseBuffer = [];
 
 // On initialisation, publish for seed-data and wait for response
-redisPublisher.publish('worker', { message: 'seed-data', data: { seedData: 'voters' } });
-redisPublisher.publish('worker', { message: 'seed-data', data: { seedData: 'admin' } });
-redisPublisher.publish('worker', { message: 'seed-data', data: { seedData: 'results' } });
-redisPublisher.publish('worker', { message: 'voterIds', data: { voterIds: true } });
+redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'voters' } }));
+redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'admin' } }));
+redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'results' } }));
+redisPublisher.publish('worker', JSON.stringify({ message: 'voterIds', data: { voterIds: true } }));
 
 // ----- redisEvents ------ //
 redisSubscriber.on('message', async (channel, message) => {
 
+    message = JSON.parse(message);
 
     console.log('MANAGER: Got message from WORKER', { message });
 
@@ -149,9 +150,9 @@ app.post('/get-seed-data', (req, res) => { // Might need a direct route
         activeStatus: process.env.VOTING_ACTIVE
     });
 
-    redisPublisher.publish('worker', { message: 'seed-data', data: { seedData: 'voters' } });
-    redisPublisher.publish('worker', { message: 'seed-data', data: { seedData: 'admin' } });
-    redisPublisher.publish('worker', { message: 'seed-data', data: { seedData: 'results' } });
+    redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'voters' } }));
+    redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'admin' } }));
+    redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'results' } }));
 
     if (process.env.VOTING_ACTIVE) {
         res.send({ data: seedData[req.body.type] });
@@ -187,12 +188,12 @@ app.post('/voter-in', async (req, res) => {
         // If no
         //// send this info to worker - who should send back data through pub-sub
         // return ok status
-        redisPublisher.publish('worker', {
+        redisPublisher.publish('worker', JSON.stringify({
             message: 'update', data: {
                 type: 'voters',
                 data: { ...req.body }
             }
-        });
+        }));
 
         return res.send('Great!!!');
 
@@ -251,7 +252,7 @@ app.post('/admin-in', passport.authenticate('jwt', {
         if (req.body.hasOwnProperty('shutdown')) {
 
             if (req.body.shutdown) {
-                redisClient.publish('worker', { message: 'shutdown', data: { shutdown: req.body.shutdown } });
+                redisPublisher.publish('worker', JSON.stringify({ message: 'shutdown', data: { shutdown: req.body.shutdown } }));
 
                 await axios.default({
                     method: 'post',
@@ -264,7 +265,7 @@ app.post('/admin-in', passport.authenticate('jwt', {
         } else {
             // Admin in object isarray object of  [{ category: 'A', type: 'Add', candidates: [...]}]
             //// send this info to worker - who should send back data through pub-sub
-            redisClient.publish('worker', { message: 'update', data: { type: 'admin', data: req.body.notifications } });
+            redisPublisher.publish('worker', JSON.stringify({ message: 'update', data: { type: 'admin', data: req.body.notifications } }));
 
         }
 

@@ -37,6 +37,10 @@ export default class CategoryNameComponent extends Vue {
       return;
     }
 
+    if (!this.allCategories) {
+      this.allCategories = [];
+    }
+
     const found = this.allCategories.findIndex(item => {
       return item.name.toLowerCase() === this.name.toLowerCase();
     });

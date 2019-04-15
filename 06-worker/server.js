@@ -12,16 +12,22 @@ const Candidate = require('./models/postgres/candidate');
 
 redisSubscriber.on('message', async (channel, message) => {
 
+  message = JSON.parse(message);
+
   console.log('WORKER: Got message from MANAGER', { message });
 
   message = message.message;
   const data = message.data;
+
 
   try {
 
     let s_data;
 
     if (message === 'seed-data') {
+      if (!data) {
+        return;
+      }
       /*
         ---- seed-data
         // Check redis if it exists
@@ -39,10 +45,10 @@ redisSubscriber.on('message', async (channel, message) => {
         s_data = await genSeedData(data.seedData);
       }
 
-      redisPublisher.publish('response', {
+      redisPublisher.publish('response', JSON.stringify({
         type: data.seedData,
         data: s_data // should be an array object
-      });
+      }));
       return;
 
     } else if (message === 'voterIds') {
@@ -65,13 +71,15 @@ redisSubscriber.on('message', async (channel, message) => {
 
       if (s_data) {
         // add to redis
-        set('voterIds', JSON.stringify(s_data[0].array));
+        if (s_data[0] && s_data[0].array) {
+          set('voterIds', JSON.stringify(s_data[0].array));
+        }
       }
 
-      redisPublisher.publish('response', {
+      redisPublisher.publish('response', JSON.stringify({
         type: 'voterIds',
         data: s_data // should be an array object
-      });
+      }));
       return;
 
     } else if (message === 'update') {
@@ -119,9 +127,9 @@ redisSubscriber.on('message', async (channel, message) => {
 
       await redisClient.flushall();
 
-      redisPublisher.publish('response', {
+      redisPublisher.publish('response', JSON.stringify({
         type: 'shutdown' // should be an array object
-      });
+      }));
 
     }
 

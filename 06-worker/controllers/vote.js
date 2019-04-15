@@ -39,15 +39,15 @@ module.exports = async (data) => {
             const adminPulse = adminData.find(item => item.category === category);
             const resultsPulse = resultsData.find(item => item.category === category);
 
-            redisPublisher.publish('response', {
+            redisPublisher.publish('response', JSON.stringify({
                 type: 'update',
                 data: { room: 'admin', type: 'pulse', data: adminPulse } // should be an array object
-            });
+            }));
 
-            redisPublisher.publish('response', {
+            redisPublisher.publish('response', JSON.stringify({
                 type: 'update',
                 data: { room: 'results', type: 'pulse', data: resultsPulse } // should be an array object
-            });
+            }));
         }
 
         return;

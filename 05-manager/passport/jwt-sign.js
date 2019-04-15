@@ -12,13 +12,15 @@ module.exports = async (email, password) => {
     try {
         const salt = await bcrypt.genSalt(10);
 
-        password = await bcrypt.hash(user.password, salt);
+        password = await bcrypt.hash(password, salt);
 
-        // Hash the password first
-        return jwt.sign({
+        const token = jwt.sign({
             email,
             password
         }, config.JWT_SECRET, { expiresIn });
+
+        // Hash the password first
+        return token;
 
     } catch (e) {
         return e;

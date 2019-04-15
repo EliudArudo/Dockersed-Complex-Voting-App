@@ -342,23 +342,34 @@ export default class Home extends Vue {
     // this.categories = JSON.parse(JSON.stringify(categories));
     // this.backup_categories = JSON.parse(JSON.stringify(categories));
 
-    this.categories = JSON.parse(JSON.stringify(this.$route.params.data));
-    this.backup_categories = JSON.parse(
-      JSON.stringify(this.$route.params.data)
-    );
-
     this.token = this.$route.params.token;
 
-    this.categories = this.categories.map(item => {
-      item.originalName = item.name;
+    axios.default.defaults.headers.common["Authorization"] = `bearer ${
+      this.token
+    }`;
 
-      item.candidates = item.candidates.map(person => {
-        person.originalName = person.name;
-        return person;
+    this.categories = this.$route.params.data;
+
+    if (this.categories) {
+      this.categories = JSON.parse(JSON.stringify(this.$route.params.data));
+      this.backup_categories = JSON.parse(
+        JSON.stringify(this.$route.params.data)
+      );
+
+      this.categories = this.categories.map(item => {
+        item.originalName = item.name;
+
+        item.candidates = item.candidates.map(person => {
+          person.originalName = person.name;
+          return person;
+        });
+
+        return item;
       });
-
-      return item;
-    });
+    } else {
+      this.categories = [];
+      this.backup_categories = [];
+    }
 
     // Will add 'seed-data' listener later
     socket.on("update", data => {
@@ -792,10 +803,6 @@ export default class Home extends Vue {
     console.log(`ADMIN: About to submit shutdown data to MANAGER`, {
       shutdown: data.shutdown
     });
-
-    axios.default.defaults.headers.common["Authorization"] = `bearer ${
-      this.token
-    }`;
 
     if (data.shutdown === true) {
       axios

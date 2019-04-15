@@ -39,15 +39,15 @@ module.exports = async (data) => {
                 const adminPulse = adminData.find(item => item.category === category);
                 const resultsPulse = resultsData.find(item => item.category === category);
 
-                redisPublisher.publish('response', {
+                redisPublisher.publish('response', JSON.stringify({
                     type: 'update',
                     data: { room: 'admin', type: 'pulse', data: adminPulse } // should be an array object
-                });
+                }));
 
-                redisPublisher.publish('response', {
+                redisPublisher.publish('response', JSON.stringify({
                     type: 'update',
                     data: { room: 'results', type: 'pulse', data: resultsPulse } // should be an array object
-                });
+                }));
 
             } else if (notification.type === 'delete') {
                 /// Category deleted
@@ -154,27 +154,27 @@ module.exports = async (data) => {
                 const adminPulse = adminData.find(item => item.category === category);
                 const resultsPulse = resultsData.find(item => item.category === category);
 
-                redisPublisher.publish('response', {
+                redisPublisher.publish('response', JSON.stringify({
                     type: 'update',
                     data: { room: 'admin', type: 'pulse', data: adminPulse } // should be an array object
-                });
+                }));
 
-                redisPublisher.publish('response', {
+                redisPublisher.publish('response', JSON.stringify({
                     type: 'update',
                     data: { room: 'results', type: 'pulse', data: resultsPulse } // should be an array object
-                });
+                }));
             }
 
             // Send notifications to right places
-            redisPublisher.publish('response', {
+            redisPublisher.publish('response', JSON.stringify({
                 type: 'update',
                 data: { room: 'voters', type: 'notification', data: notification } // should be an array object
-            });
+            }));
 
-            redisPublisher.publish('response', {
+            redisPublisher.publish('response', JSON.stringify({
                 type: 'update',
                 data: { room: 'results', type: 'notification', data: notification } // should be an array object
-            });
+            }));
 
             return;
         }

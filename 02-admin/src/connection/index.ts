@@ -1,6 +1,6 @@
 const io = require("socket.io-client");
 
 // sets up the connection
-const socket_default = io("/wsserver/admin-room");
+const socket_default = io("/admin-room");
 
-module.exports = socket_default;
+export const socket = socket_default;

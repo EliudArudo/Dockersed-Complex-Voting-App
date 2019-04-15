@@ -364,6 +364,10 @@ export default class Home extends Vue {
     // this.categories = categories;
     this.categories = this.$route.params.data;
 
+    if (!this.categories) {
+      this.categories = [];
+    }
+
     socket.on("update", data => {
       console.log("VOTER: Got new Updates from WS-SERVER", { data });
 

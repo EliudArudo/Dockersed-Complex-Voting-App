@@ -139,7 +139,10 @@ export default class Home extends Vue {
     // Mounted refreshes everything without newInfo
 
     const data = this.$route.params.data;
-    this.refreshAllData(data);
+
+    if (data) {
+      this.refreshAllData(data);
+    }
 
     socket.on("update", data => {
       console.log("RESULTS: Got new Updates from WS-SERVER", { data });

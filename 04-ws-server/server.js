@@ -59,14 +59,14 @@ async function getSeedData(type) {
 
         let res = await axios.default({
             method: 'post',
-            url: `${env.MANAGER}/get-seed-data`,
+            url: `manager://${env.MANAGER}:3004/get-seed-data`,
             data: { type }
         });
         res = res.data;
 
         return res;
     } catch (e) {
-        return e.response ? e.response.data : e;
+        throw new Error(e.response ? e.response.data : e);
     }
 }
 

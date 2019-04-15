@@ -16,6 +16,12 @@ redisClient.hget = util.promisify(redisClient.hget);
 const redisPublisher = redisClient.duplicate();
 const redisSubscriber = redisClient.duplicate();
 
+redisClient.on('connect', function () {
+    console.log('MANAGER: redis connected');
+}).on('error', function (error) {
+    console.log(error);
+});
+
 module.exports = {
     redisClient,
     redisPublisher,
