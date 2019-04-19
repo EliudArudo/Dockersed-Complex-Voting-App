@@ -290,6 +290,10 @@ export default class Home extends Vue {
         1
       );
 
+      item.currentPercentage = isNaN(item.currentPercentage)
+        ? 0
+        : item.currentPercentage;
+
       if (oldCategories) {
         filteredCategory = oldCategories.filter(
           item2 => item2.name === item.name
@@ -414,6 +418,10 @@ export default class Home extends Vue {
     parties = parties.map(item => {
       item.currentPercentage = (item.currentVotes / totalSum) * 100;
       item.currentPercentage = this.roundedToFixed(item.currentPercentage, 1);
+
+      item.currentPercentage = isNaN(item.currentPercentage)
+        ? 0
+        : item.currentPercentage;
 
       if (oldParties) {
         let filteredParty = oldParties.filter(
