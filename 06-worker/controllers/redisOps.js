@@ -3,7 +3,12 @@ const { redisClient } = require('../connection')
 const getHash = async (key1, key2) => {
     try {
         let res = await redisClient.hget(key1, key2);
-        res = JSON.parse(res);
+
+        if (res) {
+            res = JSON.parse(res);
+        } else {
+            res = null;
+        }
 
         return res;
     } catch (e) {
@@ -14,7 +19,12 @@ const getHash = async (key1, key2) => {
 const get = async (key) => {
     try {
         let res = await redisClient.get(key);
-        res = JSON.parse(res);
+
+        if (res) {
+            res = JSON.parse(res);
+        } else {
+            res = null;
+        }
 
         return res;
     } catch (e) {
@@ -28,7 +38,7 @@ const setHash = async (key1, key2, value) => {
     try {
         await redisClient.hset(key1, key2, value);
 
-        return OK;
+        return;
     } catch (e) {
         throw new Error(e);
     }

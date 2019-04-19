@@ -578,6 +578,14 @@ export default class Home extends Vue {
     /// Candidate modified -> Includes candidates removed or added
     //  update = { category: 'name', type: 'update', candidates: [{name: 'name', picture: 'picture', party: 'party'}, {name: 'name', picture: 'picture', party: 'party'}]}
 
+    const originalindex = this.categories.findIndex(
+      item => item.name === update.category
+    );
+
+    if (originalindex === -1 && update.type === "update") {
+      update.type = "add";
+    }
+
     let updateType;
     let modifiedCategory;
     let newCandidates;

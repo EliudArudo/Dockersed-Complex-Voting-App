@@ -73,6 +73,8 @@ export default class LoginPage extends Vue {
   loadingMessage = null;
   snackMessage_ = false;
 
+  shutdown = null;
+
   get snackMessage() {
     return this.snackMessage_;
   }
@@ -106,6 +108,7 @@ export default class LoginPage extends Vue {
 
       if (data) {
         this.seed_data = data.data;
+        this.shutdown = data.shutdown;
       }
     });
   }
@@ -170,7 +173,11 @@ export default class LoginPage extends Vue {
         // Push whether there's data or not, because it's admin who creates seed data;
         this.$router.push({
           name: "home",
-          params: { data: this.seed_data, token: res.data.token }
+          params: {
+            data: this.seed_data,
+            token: res.data.token,
+            shutdown: this.shutdown
+          }
         });
 
         //// Requests to the server done here

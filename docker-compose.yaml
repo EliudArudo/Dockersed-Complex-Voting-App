@@ -27,7 +27,10 @@ services:
       - PGUSER=postgres
       - PGDATABASE=postgres
       - PGPASSWORD=postgres_password
-      - PGPORT=5432    
+      - PGPORT=5432
+    depends_on:   
+      - postgres
+      - redis 
   manager:
     build:
       context: ./05-manager
@@ -42,6 +45,8 @@ services:
       - JWT_EXPIRATION=604800
       - JWT_SECRET=jwt_guy
       - VOTING_ACTIVE=true
+    depends_on: 
+      - redis 
   wsserver:
     build:
       context: ./04-ws-server

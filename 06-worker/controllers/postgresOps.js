@@ -7,89 +7,80 @@ const genSeedData = async (forWho) => {
 
     try {
 
-        const Candidates = await Candidate.findAll({});
+        const Candidates = await Candidate.findAll().map(el => el.get({ plain: true }));
 
         if (!Candidates || Candidates.length === 0) {
             return [];
         }
 
-        const Categories = [];
+        let Categories = [];
 
         // returning a function with an async call
-        return Candidates.forEach(async (person, index, array) => {
+        for (const person of Candidates) {
+            let categoryIndex = Categories.findIndex(item => item.name === person.category);
 
-            const categoryIndex = Categories.findIndex(item => item.name === person.category);
+            const pictureData = await Picture.findOne({ userName: person.name });
 
-            try {
+            if (categoryIndex === -1) {
 
-                const pictureData = await Picture.findOne({ userName: person.name });
-
-                if (categoryIndex === -1) {
-
-                    Categories.push({
-                        name: person.category,
-                        currentVotes: 0, // sort out at last,
-                        candidates: [{
-                            name: person.name,
-                            picture: pictureData.picture, // get from mongodb
-                            party: person.party,
-                            currentVotes: person.currentVotes
-                        }]
-                    })
-
-
-                } else {
-
-                    Categories[categoryIndex].candidates.push({
+                Categories.push({
+                    name: person.category,
+                    currentVotes: 0, // sort out at last,
+                    candidates: [{
                         name: person.name,
                         picture: pictureData.picture, // get from mongodb
                         party: person.party,
                         currentVotes: person.currentVotes
-                    });
+                    }]
+                })
 
-                }
 
-                if (index === array.length - 1) {
-                    // Get total Categories votes
-                    Categories = Categories.map(item => {
+            } else {
 
-                        const sum = 0;
-                        for (const person of item.candidates) {
-                            sum += person.currentVotes;
-                        }
-                        item.currentVotes = sum;
+                Categories[categoryIndex].candidates.push({
+                    name: person.name,
+                    picture: pictureData.picture, // get from mongodb
+                    party: person.party,
+                    currentVotes: person.currentVotes
+                });
 
-                        if (forWho === 'voters') {
-                            /// Category
-                            /// remove Category current votes
-                            /// change 'name' field to 'category'
-                            /// Candidate
-                            /// remove current votes
-                            /// add checked: false 
-                            delete item['currentVotes'];
-                            item['category'] = item.name;
-                            delete item['name'];
-
-                            item.candidates = item.candidates.map(person => {
-                                delete person['currentVotes'];
-                                person['checked'] = false;
-
-                                return person;
-                            });
-                        }
-                        return item;
-                    });
-
-                    /// store this in redis
-                    setHash('seed-data', forWho, JSON.parse(Categories));
-                    return Categories;
-                }
-
-            } catch (e) {
-                throw new Error(e);
             }
+        }
 
+        // Get total Categories votes
+        Categories = Categories.map(item => {
+
+            let sum = 0;
+            for (let person of item.candidates) {
+                sum += person.currentVotes;
+            }
+            item.currentVotes = sum;
+
+            if (forWho === 'voters') {
+                /// Category
+                /// remove Category current votes
+                /// change 'name' field to 'category'
+                /// Candidate
+                /// remove current votes
+                /// add checked: false 
+                delete item['currentVotes'];
+                item['category'] = item.name;
+                delete item['name'];
+
+                item.candidates = item.candidates.map(person => {
+                    delete person['currentVotes'];
+                    person['checked'] = false;
+
+                    return person;
+                });
+            }
+            return item;
         });
+
+        /// store this in redis
+        await setHash('seed-data', forWho, JSON.stringify(Categories));
+
+        return Categories;
 
     } catch (e) {
         throw new Error(e);

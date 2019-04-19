@@ -14,7 +14,9 @@ const port = 3004;
 const app = express();
 
 app.use(cors());
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: "50mb" }));
+app.use(bodyParser.urlencoded({ limit: "50mb", extended: true, parameterLimit: 50000 }));
 
 require('./passport/jwt-strategy');
 
@@ -38,10 +40,12 @@ const seedData = {
     results: []
 }
 
-const voterIds = [];
+let voterIds = [];
 
-const notificationBuffer = [];
-const pulseBuffer = [];
+let notificationBuffer = [];
+let pulseBuffer = [];
+// Use 10 for testing, and 1 for dev
+const bufferLimit = 1;
 
 // On initialisation, publish for seed-data and wait for response
 redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'voters' } }));
@@ -52,51 +56,94 @@ redisPublisher.publish('worker', JSON.stringify({ message: 'voterIds', data: { v
 // ----- redisEvents ------ //
 redisSubscriber.on('message', async (channel, message) => {
 
+    console.log('MANAGER: Got message from WORKER', { message: message.slice(0, 100) });
+
     message = JSON.parse(message);
 
-    console.log('MANAGER: Got message from WORKER', { message });
 
-    switch (message.type) {
-        // message object is { type: '', data: object}
-        case 'shutdown':
-            await axios.default({
-                method: 'post',
-                url: `${env.WSSERVER}/shutdown`,
-                data: { shutdown: message.status }
-            });
-            break;
-        case 'seed-data':
-            // Should update frequently (on every admin and voter update)
-            seedData[message.type] = message.data;
-            break;
-        case 'voterIds':
-            voterIds = message.data;
-            break;
-        case 'voterStatus':
-            break;
-        case 'update':
-            // Should update frequently (on every admin and voter update)
-            if (message.data.type === 'pulse') {
-                pulseBuffer.push(message.data);
+    try {
 
-                if (pulseBuffer.length === 10) {
+        switch (message.type) {
+            // message object is { type: '', data: object}
+            case 'shutdown':
+                await axios.default({
+                    method: 'post',
+                    url: `wsserver://${env.WSSERVER}:3003/shutdown`,
+                    data: { shutdown: message.status }
+                });
+                break;
+            case 'seed-data':
+                // Should update frequently (on every admin and voter update)
+
+                if (!Array.isArray(message.data)) { // Meaning it's JSON
+                    message.data = JSON.parse(message.data);
+
+                    // message.data = message.data.map(item => {
+                    //     item.candidates = item.candidates.map(person => {
+                    //         person.picture = "data:application/octet-stream;base64," + person.picture;
+                    //         return person;
+                    //     })
+                    //     return item;
+                    // });
+                }
+
+                seedData[message.room] = message.data;
+
+                console.log("SEED DATA", seedData);
+
+                /// find a way to send data to admin
+                if (message.room === 'admin') {
+
                     await axios.default({
                         method: 'post',
-                        url: `${env.WSSERVER}/ws-updates`,
-                        data: { room: message.data.room, type: message.data.type, data: message.data.data }
+                        url: `wsserver://${env.WSSERVER}:3003/admin-seed-update`,
+                        data: {
+                            data: message.data
+                        }
                     });
                 }
-            } else if (message.data.type === 'notification') {
-                notificationBuffer.push(message.data.data);
-                if (notificationBuffer.length === 10) {
-                    await axios.default({
-                        method: 'post',
-                        url: `${env.WSSERVER}/ws-updates`,
-                        data: { room: message.data.room, type: message.data.type, data: message.data.data }
-                    });
+
+                break;
+            case 'voterIds':
+                voterIds = message.data;
+                break;
+            case 'voterStatus':
+                break;
+            case 'update':
+                // Should update frequently (on every admin and voter update)
+                if (message.data.type === 'pulse') {
+                    pulseBuffer.push(message.data);
+
+                    if (pulseBuffer.length >= bufferLimit) {
+                        await axios.default({
+                            method: 'post',
+                            url: `wsserver://${env.WSSERVER}:3003/ws-updates`,
+                            data: { room: message.data.room, type: message.data.type, data: message.data.data, shutdown: process.env.VOTING_ACTIVE }
+                        });
+
+                        pulseBuffer = [];
+                    }
+                } else if (message.data.type === 'notification') {
+                    notificationBuffer.push(message.data.data);
+                    /// restore buffer later
+
+
+                    if (notificationBuffer.length >= bufferLimit) {
+                        await axios.default({
+                            method: 'post',
+                            url: `wsserver://${env.WSSERVER}:3003/ws-updates`,
+                            data: { room: message.data.room, type: message.data.type, data: message.data.data, shutdown: process.env.VOTING_ACTIVE }
+                        });
+
+                        notificationBuffer = [];
+                    }
                 }
-            }
-            break;
+                break;
+        }
+
+    } catch (e) {
+        console.log(e.response.data);
+        throw new Error(e);
     }
 });
 
@@ -154,11 +201,13 @@ app.post('/get-seed-data', (req, res) => { // Might need a direct route
     redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'admin' } }));
     redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'results' } }));
 
+    let data = [];
+
     if (process.env.VOTING_ACTIVE) {
-        res.send({ data: seedData[req.body.type] });
-    } else {
-        res.send({ data: [] });
+        data = seedData[req.body.type];
     }
+    res.send({ data, shutdown: process.env.VOTING_ACTIVE === "false" });
+
 });
 
 app.post('/voter-in', async (req, res) => {
@@ -265,11 +314,12 @@ app.post('/admin-in', passport.authenticate('jwt', {
         } else {
             // Admin in object isarray object of  [{ category: 'A', type: 'Add', candidates: [...]}]
             //// send this info to worker - who should send back data through pub-sub
+
             redisPublisher.publish('worker', JSON.stringify({ message: 'update', data: { type: 'admin', data: req.body.notifications } }));
 
         }
 
-        const { email, password } = req.body.user;
+        const { email, password } = req.user;
 
         sign(email, password).then(token => res.send({ token })).catch(e => {
             console.log(e);

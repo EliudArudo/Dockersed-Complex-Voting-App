@@ -51,7 +51,10 @@ app.use(
     })
 );
 
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
+
+app.use(bodyParser.json({ limit: "50mb" }));
+app.use(bodyParser.urlencoded({ limit: "50mb", extended: true, parameterLimit: 50000 }));
 
 async function getSeedData(type) {
 
@@ -76,7 +79,7 @@ votersRoom.on('connection', function (socket) {
 
         console.log(`WS-SERVER -> voters room: Data got from MANAGER, about to be sent to VOTER of socket '${socket.id}'`, { data });
 
-        if (!data || !data.data || data.data.length === 0) {
+        if (data.shutdown === true) {
             votersRoom.emit('seed-data', data);
         } else {
             socket.emit('seed-data', data);
@@ -107,7 +110,7 @@ resultsRoom.on('connection', function (socket) {
     getSeedData('results').then((data) => {
 
         console.log(`WS-SERVER -> results room: Data got from MANAGER, about to be sent to RESULTS of socket ${socket.id}`, { data });
-        if (!data.data || data.data.length === 0) {
+        if (data.shutdown === true) {
             resultsRoom.emit('seed-data', data);
         } else {
             socket.emit('seed-data', data);
@@ -143,7 +146,7 @@ app.post('/ws-updates', (req, res) => {
 
     let room;
     if (req.body.room === 'voters') {
-        room = votingRoom;
+        room = votersRoom;
     } else if (req.body.room === 'admin') {
         room = adminRoom;
     } else if (req.body.room === 'results') {
@@ -159,6 +162,24 @@ app.post('/ws-updates', (req, res) => {
         type: req.body.type, // either pulse or notification
         data: req.body.data,
     });
+
+    res.send('Successful');
+});
+
+app.post('/admin-seed-update', (req, res) => {
+    // req.body has -> {room: '', type:'pulse/notification', data}
+    // pulse is category object with current votes
+    // notification is update notifications
+    if (!req.body || !req.body.data) {
+        res.status(401).send('A property missing from request object');
+        return;
+    }
+
+    console.log(`WS-SERVER: Got admin seed data and about to send to 'admins' room ---- '/admin-seed-update' route`, {
+        data: req.body.data
+    });
+
+    adminRoom.emit('seed-data', { data: req.body.data });
 
     res.send('Successful');
 });

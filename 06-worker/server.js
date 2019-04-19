@@ -22,12 +22,13 @@ redisSubscriber.on('message', async (channel, message) => {
 
   try {
 
-    let s_data;
+    let s_data, s_data2, s_data3;
 
     if (message === 'seed-data') {
       if (!data) {
         return;
       }
+
       /*
         ---- seed-data
         // Check redis if it exists
@@ -41,12 +42,17 @@ redisSubscriber.on('message', async (channel, message) => {
       //  message = 'seed-data', data.seedData = 'voters | admin | results';
       s_data = await getHash(message, data.seedData);
 
+      // console.log("s_data 1:", s_data);
+
       if (!s_data) {
         s_data = await genSeedData(data.seedData);
       }
 
+      // console.log("s_data 2:", s_data);
+
       redisPublisher.publish('response', JSON.stringify({
-        type: data.seedData,
+        type: 'seed-data',
+        room: data.seedData,
         data: s_data // should be an array object
       }));
       return;
@@ -109,7 +115,49 @@ redisSubscriber.on('message', async (channel, message) => {
             --- category updated (candidates added / removed) - send pulse object
        */
 
-        await admin(data.data);
+        // Sends pulses and notifications only
+        admin(data.data, async () => {
+          /// Send admin seed data to reset everything on admin side too
+          //  message = 'seed-data', data.seedData = 'voters | admin | results';
+
+          s_data = await getHash('seed-data', 'admin');
+          s_data2 = await getHash('seed-data', 'voters');
+          s_data3 = await getHash('seed-data', 'results');
+
+
+          // console.log("s_data 1:", s_data);
+
+          if (!s_data) {
+            s_data = await genSeedData('admin');
+          }
+
+          if (!s_data2) {
+            s_data2 = await genSeedData('voters');
+          }
+          if (!s_data3) {
+            s_data3 = await genSeedData('results');
+          }
+
+          redisPublisher.publish('response', JSON.stringify({
+            type: 'seed-data',
+            room: 'admin',
+            data: s_data // should be an array object
+          }));
+
+          redisPublisher.publish('response', JSON.stringify({
+            type: 'seed-data',
+            room: 'voters',
+            data: s_data2 // should be an array object
+          }));
+
+          redisPublisher.publish('response', JSON.stringify({
+            type: 'seed-data',
+            room: 'results',
+            data: s_data3 // should be an array object
+          }));
+
+        });
+
         return;
 
       }
@@ -144,6 +192,8 @@ redisSubscriber.subscribe('worker');
 sequelize
   .sync()
   .then(() => {
+    // Remove Candidates table
+    Candidate.destroy({ where: {}, truncate: true });
     console.log('WORKER: Sequelize + postgres initialized');
   })
   .catch(console.log)

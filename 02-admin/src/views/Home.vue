@@ -338,23 +338,10 @@ export default class Home extends Vue {
     }
   }
 
-  mounted() {
-    // this.categories = JSON.parse(JSON.stringify(categories));
-    // this.backup_categories = JSON.parse(JSON.stringify(categories));
-
-    this.token = this.$route.params.token;
-
-    axios.default.defaults.headers.common["Authorization"] = `bearer ${
-      this.token
-    }`;
-
-    this.categories = this.$route.params.data;
-
-    if (this.categories) {
-      this.categories = JSON.parse(JSON.stringify(this.$route.params.data));
-      this.backup_categories = JSON.parse(
-        JSON.stringify(this.$route.params.data)
-      );
+  resetData(data) {
+    if (data.length > 0) {
+      this.categories = JSON.parse(JSON.stringify(data));
+      this.backup_categories = JSON.parse(JSON.stringify(data));
 
       this.categories = this.categories.map(item => {
         item.originalName = item.name;
@@ -370,6 +357,21 @@ export default class Home extends Vue {
       this.categories = [];
       this.backup_categories = [];
     }
+  }
+
+  mounted() {
+    // this.categories = JSON.parse(JSON.stringify(categories));
+    // this.backup_categories = JSON.parse(JSON.stringify(categories));
+
+    this.token = this.$route.params.token;
+
+    this.votingShutdown = this.$route.params.shutdown;
+
+    axios.default.defaults.headers.common["Authorization"] = `bearer ${
+      this.token
+    }`;
+
+    this.resetData(this.$route.params.data);
 
     // Will add 'seed-data' listener later
     socket.on("update", data => {
@@ -377,6 +379,14 @@ export default class Home extends Vue {
 
       if (data && data.data) {
         this.pulseProcessor(data.data);
+      }
+    });
+
+    socket.on("seed-data", data => {
+      console.log("ADMIN: Got seed data from WS-SERVER", { data });
+
+      if (data) {
+        this.resetData(data.data);
       }
     });
 
@@ -1041,8 +1051,25 @@ export default class Home extends Vue {
     this.final = false;
     this.totalChanges = [];
     if (e) {
-      console.log(`ADMIN: About to submit changes data to MANAGER`, {
-        notifications: this.notifications
+      /// Changes here
+      const notificationsToSend = this.notifications.map(item => {
+        let index = -1;
+        if (this.backup_categories.length > 0) {
+          index = this.backup_categories.findIndex(
+            item_1 => item_1.category === item.category
+          );
+        }
+
+        /// Nothing happened here
+        if (index === -1 && item.type === "update") {
+          item.type = "add";
+        }
+
+        return item;
+      });
+
+      console.log(`ADMIN: About to submit notifications to MANAGER`, {
+        notifications: notificationsToSend
       });
 
       this.startLoading("Submitting your final changes");
@@ -1050,11 +1077,12 @@ export default class Home extends Vue {
         .default({
           method: "post",
           url: "/manager/admin-in",
-          data: { notifications: this.notifications }
+          data: { notifications: notificationsToSend }
         })
         .then(() => {
           this.stopLoading();
           this.openToast("You're welcome!!!");
+          this.refresh();
         })
         .catch(e => {
           this.stopLoading();

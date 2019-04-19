@@ -2,6 +2,8 @@ const redis = require('redis');
 const Sequelize = require('sequelize');
 const mongoose = require('mongoose');
 
+const Picture = require('../models/mongodb/pictures');
+
 const util = require('util');
 
 const { REDIS_HOST, REDIS_PORT, PG_HOST, PG_USER, PG_PASSWORD, PG_DATABASE, PG_PORT, MONGO_URI, MONGO_PORT, MONGO_DB } = require('../env');
@@ -20,13 +22,14 @@ mongoose.connect(mongoURI, {
     useNewUrlParser: true,
     reconnectTries: 10,
     reconnectInterval: 1000
-}, (err, db) => {
+}, async (err, db) => {
     if (err) {
         console.log(err);
         // process.exit(1);
     }
 
     console.log('WORKER: Mongodb connected');
+
 });
 
 const redisClient = redis.createClient({
@@ -44,6 +47,7 @@ const redisSubscriber = redisClient.duplicate();
 
 redisClient.on('connect', function () {
     console.log('WORKER: redis connected');
+    redisClient.flushall();
 }).on('error', function (error) {
     console.log(error);
 });

@@ -427,6 +427,17 @@ export default class Home extends Vue {
 
   notificationProcessor(data) {
     let message;
+    const originalindex = this.categories.findIndex(
+      item => item.category.toLowerCase() === data.category.toLowerCase()
+    );
+
+    /// Internal error fix
+    if (originalindex === -1 && data.type === "update") {
+      // If does not exist, change type to add
+      data.type = "add";
+    }
+    /// Internal error fix
+
     switch (data.type) {
       case "add":
         // Adding checker property to each candidate

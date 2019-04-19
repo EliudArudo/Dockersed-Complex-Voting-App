@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const picturesSchema = new Schema({
     userName: String,
-    picture: Buffer
+    picture: String
 })
 
 module.exports = mongoose.model('picture', picturesSchema)

@@ -5,22 +5,27 @@ const { genSeedData } = require('../controllers/postgresOps');
 
 const { redisPublisher } = require('../connection');
 
-module.exports = async (data) => {
+module.exports = async (data, callback) => {
 
     try {
 
-        for (const notification of data) {
-            // Regen the seed data -> Works on redis automatically
-            const adminData = await genSeedData('admin');
-            const resultsData = await genSeedData('results');
+
+        // Regen the seed data -> Works on redis automatically
+        await genSeedData('admin');
+        let resultsData = await genSeedData('results');
+
+        data.forEach(async (notification, index, array) => {
 
             if (notification.type === 'add') {
+
                 /// Category added
                 /// { category: 'name', type: 'add', candidates: [{name: 'name', picture: 'picture', party: 'party'}, {name: 'name', picture: 'picture', party: 'party'}]}
 
                 // Add the candidates to 'postgres' -> new Category will automatically be added
                 // Save image in mongodb and get id
+
                 for (const candidate of notification.candidates) {
+
                     const pic = await new Picture({
                         userName: candidate.name,
                         picture: candidate.picture
@@ -31,23 +36,27 @@ module.exports = async (data) => {
                         category: notification.category,
                         party: candidate.party,
                         currentVotes: 0,
-                        pictureId: pic._id
+                        pictureId: pic._id.toString()
                     });
+
                 }
 
+                adminData = await genSeedData('admin');
+                resultsData = await genSeedData('results');
+
                 // Send pulse object with empty current Votes
-                const adminPulse = adminData.find(item => item.category === category);
-                const resultsPulse = resultsData.find(item => item.category === category);
+                let resultsPulse = {};
 
-                redisPublisher.publish('response', JSON.stringify({
-                    type: 'update',
-                    data: { room: 'admin', type: 'pulse', data: adminPulse } // should be an array object
-                }));
+                if (resultsData) {
+                    resultsPulse = resultsData.find(item => item.name === notification.category);
 
-                redisPublisher.publish('response', JSON.stringify({
-                    type: 'update',
-                    data: { room: 'results', type: 'pulse', data: resultsPulse } // should be an array object
-                }));
+                    if (resultsPulse) {
+                        redisPublisher.publish('response', JSON.stringify({
+                            type: 'update',
+                            data: { room: 'results', type: 'pulse', data: resultsPulse } // should be an array object
+                        }));
+                    }
+                }
 
             } else if (notification.type === 'delete') {
                 /// Category deleted
@@ -91,7 +100,7 @@ module.exports = async (data) => {
                 /// { category: 'name', type: 'update', candidates: [{name: 'name', picture: 'picture', party: 'party'}, {name: 'name', picture: 'picture', party: 'party'}]}
 
                 // Do candidate checks
-                const candidates = await Category.findAll({ where: { category: notification.category } });
+                const candidates = await Candidate.findAll({ where: { category: notification.category } });
 
                 const persistentGuys = [];
 
@@ -121,10 +130,10 @@ module.exports = async (data) => {
                         //// Update all user info in postgress and picture for mongodb
                         await Candidate.create({
                             name: candidate.name,
-                            category: candidate.category,
+                            category: notification.category,
                             party: candidate.party,
                             currentVotes: 0,
-                            pictureId: pic._id
+                            pictureId: pic._id.toString()
                         });
                     }
                 }
@@ -148,21 +157,25 @@ module.exports = async (data) => {
                 }
 
                 // Regen the seed data -> Works on redis automatically
-                const adminData = await genSeedData('admin');
-                const resultsData = await genSeedData('results');
+                await genSeedData('admin');
+                let resultsData = await genSeedData('results');
                 // Send pulse object with empty current Votes
-                const adminPulse = adminData.find(item => item.category === category);
-                const resultsPulse = resultsData.find(item => item.category === category);
+                // Send pulse object with empty current Votes
 
-                redisPublisher.publish('response', JSON.stringify({
-                    type: 'update',
-                    data: { room: 'admin', type: 'pulse', data: adminPulse } // should be an array object
-                }));
+                let resultsPulse = {};
 
-                redisPublisher.publish('response', JSON.stringify({
-                    type: 'update',
-                    data: { room: 'results', type: 'pulse', data: resultsPulse } // should be an array object
-                }));
+                if (resultsData) {
+                    resultsPulse = resultsData.find(item => item.name === notification.category);
+
+                    if (resultsPulse) {
+                        redisPublisher.publish('response', JSON.stringify({
+                            type: 'update',
+                            data: { room: 'results', type: 'pulse', data: resultsPulse } // should be an array object
+                        }));
+                    }
+
+                }
+
             }
 
             // Send notifications to right places
@@ -176,8 +189,11 @@ module.exports = async (data) => {
                 data: { room: 'results', type: 'notification', data: notification } // should be an array object
             }));
 
-            return;
-        }
+            if (index === array.length - 1) {
+                callback();
+            }
+
+        });
 
     } catch (e) {
         throw new Error(e);
