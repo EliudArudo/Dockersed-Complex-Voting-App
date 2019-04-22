@@ -76,7 +76,6 @@ const genSeedData = async (forWho) => {
             }
             return item;
         });
-
         /// store this in redis
         await setHash('seed-data', forWho, JSON.stringify(Categories));
 

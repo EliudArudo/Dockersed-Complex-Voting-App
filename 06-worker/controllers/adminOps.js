@@ -41,8 +41,9 @@ module.exports = async (data, callback) => {
 
                 }
 
-                adminData = await genSeedData('admin');
                 resultsData = await genSeedData('results');
+                await genSeedData('admin');
+                await genSeedData('voters');
 
                 // Send pulse object with empty current Votes
                 let resultsPulse = {};
@@ -63,7 +64,7 @@ module.exports = async (data, callback) => {
                 /// { category: 'name', type: 'delete' }
 
                 // Delete category from Candidates table
-                const candidates = await Candidate.findAll({ where: { category: notification.category } });
+                const candidates = await Candidate.findAll({ where: { category: notification.category } }).map(el => el.get({ plain: true }));
 
                 for (const candidate of candidates) {
                     await Picture.findOneAndRemove({ userName: candidate.name });
@@ -100,14 +101,14 @@ module.exports = async (data, callback) => {
                 /// { category: 'name', type: 'update', candidates: [{name: 'name', picture: 'picture', party: 'party'}, {name: 'name', picture: 'picture', party: 'party'}]}
 
                 // Do candidate checks
-                const candidates = await Candidate.findAll({ where: { category: notification.category } });
+                const candidates = await Candidate.findAll({ where: { category: notification.category } }).map(el => el.get({ plain: true }));
 
                 const persistentGuys = [];
 
                 for (const candidate of candidates) {
-                    const deleted = notification.candidates.findIndex(person => person.name === candidate.name) === -1;
+                    const deleted = notification.candidates.findIndex(person => person.name === candidate.name);
 
-                    if (deleted) {
+                    if (deleted === -1) {
                         //// Delete pictures from mongodb
                         await Picture.findByIdAndRemove({ userName: candidate.name });
                         /// Delete candidates not in the list
@@ -140,10 +141,9 @@ module.exports = async (data, callback) => {
 
                 /// For existing guys, update their information accordingly too
                 for (const person of persistentGuys) {
-                    let candidate = await Candidate.findAll({ where: { name: person.name } });
-                    candidate = candidate[0];
+                    let candidate = await Candidate.findOne({ where: { name: person.name } });
 
-                    if (candidate) {
+                    if (candidate.name) {
                         candidate.name = person.name;
                         candidate.category = notification.category;
                         candidate.party = person.party;
@@ -156,8 +156,11 @@ module.exports = async (data, callback) => {
 
                 }
 
+
+
                 // Regen the seed data -> Works on redis automatically
                 await genSeedData('admin');
+                await genSeedData('voters');
                 let resultsData = await genSeedData('results');
                 // Send pulse object with empty current Votes
                 // Send pulse object with empty current Votes

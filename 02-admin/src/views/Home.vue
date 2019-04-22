@@ -1052,23 +1052,56 @@ export default class Home extends Vue {
     this.totalChanges = [];
     if (e) {
       /// Changes here
-      const notificationsToSend = this.notifications.map(item => {
+      console.log(`ADMIN: About to submit notifications to MANAGER - pre`, {
+        notifications: JSON.parse(JSON.stringify(this.notifications)),
+        backup_categories: this.backup_categories
+      });
+
+      let notificationsToSend = [...this.notifications].map(item => {
         let index = -1;
         if (this.backup_categories.length > 0) {
           index = this.backup_categories.findIndex(
-            item_1 => item_1.category === item.category
+            item_1 => item_1.name === item.category
           );
         }
 
         /// Nothing happened here
-        if (index === -1 && item.type === "update") {
-          item.type = "add";
+        if (index === -1) {
+          if (item.type === "update") {
+            item.type = "add";
+          }
         }
 
         return item;
       });
 
-      console.log(`ADMIN: About to submit notifications to MANAGER`, {
+      notificationsToSend = notificationsToSend.filter(item => {
+        let index = -1;
+        if (this.backup_categories.length > 0) {
+          index = this.backup_categories.findIndex(
+            item_1 => item_1.name === item.category
+          );
+        }
+
+        return !(index === -1 && item.type === "update");
+      });
+
+      const cleanArray = [];
+      for (let i = notificationsToSend.length - 1; i >= 0; i--) {
+        const item = notificationsToSend[i];
+
+        const index = cleanArray.findIndex(
+          it => it.category === item.category && it.type === item.type
+        );
+
+        if (index === -1) {
+          cleanArray.push(item);
+        }
+      }
+
+      notificationsToSend = cleanArray.reverse();
+
+      console.log(`ADMIN: About to submit notifications to MANAGER - post`, {
         notifications: notificationsToSend
       });
 
