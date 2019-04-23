@@ -23,7 +23,7 @@ export default class SplashScreen extends Vue {
     socket.on("seed-data", data => {
       console.log("RESULTS: Got seed data from WS-SERVER", { data });
 
-      if (data && data.data && data.data.length > 0) {
+      if (data.data.length > 0) {
         this.$router.push({ name: "home", params: { data: data.data } });
       }
     });

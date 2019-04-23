@@ -56,14 +56,14 @@ app.use(
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true, parameterLimit: 50000 }));
 
-async function getSeedData(type) {
+async function getSeedData(type, noAdmin) {
 
     try {
 
         let res = await axios.default({
             method: 'post',
             url: `manager://${env.MANAGER}:3004/get-seed-data`,
-            data: { type }
+            data: { type, noAdmin }
         });
         res = res.data;
 
@@ -78,12 +78,7 @@ votersRoom.on('connection', function (socket) {
     getSeedData('voters').then((data) => {
 
         console.log(`WS-SERVER -> voters room: Data got from MANAGER, about to be sent to VOTER of socket '${socket.id}'`, { data });
-
-        if (data.shutdown === true) {
-            votersRoom.emit('seed-data', data);
-        } else {
-            socket.emit('seed-data', data);
-        }
+        socket.emit('seed-data', data);
     }).catch(e => {
         console.log(e);
     })
@@ -94,12 +89,7 @@ adminRoom.on('connection', function (socket) {
     getSeedData('admin').then((data) => {
 
         console.log(`WS-SERVER -> admin room: Data got from MANAGER, about to be sent to ADMIN of socket ${socket.id}`, { data });
-
-        if (!data.data || data.data.length === 0) {
-            adminRoom.emit('seed-data', data);
-        } else {
-            socket.emit('seed-data', data);
-        }
+        socket.emit('seed-data', data);
     }).catch(e => {
         console.log(e);
     })
@@ -110,11 +100,8 @@ resultsRoom.on('connection', function (socket) {
     getSeedData('results').then((data) => {
 
         console.log(`WS-SERVER -> results room: Data got from MANAGER, about to be sent to RESULTS of socket ${socket.id}`, { data });
-        if (data.shutdown === true) {
-            resultsRoom.emit('seed-data', data);
-        } else {
-            socket.emit('seed-data', data);
-        }
+        socket.emit('seed-data', data);
+
 
     }).catch(e => {
         console.log(e);
@@ -166,7 +153,7 @@ app.post('/ws-updates', (req, res) => {
     res.send('Successful');
 });
 
-app.post('/admin-seed-update', (req, res) => {
+app.post('/admin-seed-update', async (req, res) => {
     // req.body has -> {room: '', type:'pulse/notification', data}
     // pulse is category object with current votes
     // notification is update notifications
@@ -180,6 +167,25 @@ app.post('/admin-seed-update', (req, res) => {
     });
 
     adminRoom.emit('seed-data', { data: req.body.data });
+
+    if (req.body.data.length === 0) { // send empty seed data to everyone
+        resultsRoom.emit('shutdown', true);
+        votersRoom.emit('shutdown', true);
+    } else { // If there's new seed data
+
+        try {
+            const resultData = await getSeedData('results', true);
+            const votersData = await getSeedData('voters', true);
+
+            resultsRoom.emit('seed-data', resultData);
+            votersRoom.emit('seed-data', votersData);
+
+        } catch (e) {
+            console.log(e);
+        }
+
+
+    };
 
     res.send('Successful');
 });

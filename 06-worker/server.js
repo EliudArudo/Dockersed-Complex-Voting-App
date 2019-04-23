@@ -67,20 +67,40 @@ redisSubscriber.on('message', async (channel, message) => {
          /// If no, return empty array
       */
 
+      // let prevList = await VoterId.findOne({ name: 'all' });
+
+      // if (!prevList) { // meaning nothing was found
+      //   await new VoterId({ name: 'all', array: [] }).save();
+      //   prevList = await VoterId.findOne({ name: 'all' });
+      // }
+
+      // prevList.array = prevList.array.push(data["id"]);
+      // prevList.save();
+
+      // let prevList2 = await get('voterIds');
+      // if (!prevList2) {
+      //   await set('voterIds', []);
+      //   prevList2 = await get('voterIds');
+      // }
+      // prevList2.push(data["id"]);
+      // set('voterIds', prevList2);
+
       s_data = await get(message);
 
       if (s_data) {
         return s_data;
       }
 
-      s_data = await VoterID.find({ name: 'all' }); // find first object only
+      s_data = await VoterID.findOne({ name: 'all' }); // find first object only
 
-      if (s_data) {
-        // add to redis
-        if (s_data[0] && s_data[0].array) {
-          set('voterIds', JSON.stringify(s_data[0].array));
-        }
+      if (!s_data) { // s_data not found
+        await new VoterID({ name: 'all', array: [] }).save();
+        s_data = await VoterID.findOne({ name: 'all' });
       }
+
+      set('voterIds', s_data.array);
+      // Not supposed to be here --- optimisation
+      s_data = s_data.array;
 
       redisPublisher.publish('response', JSON.stringify({
         type: 'voterIds',
@@ -175,8 +195,32 @@ redisSubscriber.on('message', async (channel, message) => {
 
       await redisClient.flushall();
 
+
+      const s_data = await genSeedData('admin');
+      const s_data2 = await genSeedData('voters');
+      const s_data3 = await genSeedData('results');
+
       redisPublisher.publish('response', JSON.stringify({
-        type: 'shutdown' // should be an array object
+        type: 'seed-data',
+        room: 'admin',
+        data: s_data // should be an empty array object
+      }));
+
+      redisPublisher.publish('response', JSON.stringify({
+        type: 'seed-data',
+        room: 'voters',
+        data: s_data2 // should be an empty array object
+      }));
+
+      redisPublisher.publish('response', JSON.stringify({
+        type: 'seed-data',
+        room: 'results',
+        data: s_data3 // should be an empty array object
+      }));
+
+
+      redisPublisher.publish('response', JSON.stringify({
+        type: 'shutdown' // should be an empty array object
       }));
 
     }
@@ -193,8 +237,8 @@ sequelize
   .sync()
   .then(() => {
     // Remove Candidates table
-    Candidate.destroy({ where: {}, truncate: true });
     console.log('WORKER: Sequelize + postgres initialized');
+    require('./connection/resetDatabases');
   })
   .catch(console.log)
 

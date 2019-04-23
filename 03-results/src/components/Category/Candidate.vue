@@ -28,7 +28,7 @@
           <transition name="slide-fade" mode="out-in">
             <v-list-tile-sub-title
               :key="data.currentVotes"
-            >{{data.currentVotes.toLocaleString()}} votes</v-list-tile-sub-title>
+            >{{data.currentVotes.toLocaleString() + vote(data.currentVotes)}}</v-list-tile-sub-title>
           </transition>
         </v-list-tile-content>
         <v-list-tile-content>
@@ -57,7 +57,11 @@ import { Vue, Component } from "vue-property-decorator";
 @Component({
   props: ["data"]
 })
-export default class CandidateComponent extends Vue {}
+export default class CandidateComponent extends Vue {
+  vote(number) {
+    return number === 1 ? " vote" : " votes";
+  }
+}
 </script>
 
 <style lang="scss">

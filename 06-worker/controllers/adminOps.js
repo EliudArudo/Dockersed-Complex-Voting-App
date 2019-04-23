@@ -65,12 +65,15 @@ module.exports = async (data, callback) => {
 
                 // Delete category from Candidates table
                 const candidates = await Candidate.findAll({ where: { category: notification.category } }).map(el => el.get({ plain: true }));
-
+        
                 for (const candidate of candidates) {
                     await Picture.findOneAndRemove({ userName: candidate.name });
-                }
 
-                await Candidate.destroy({ where: { category: notification.category } });
+                    const s_candidate = await Candidate.findOne({where: { name: candidate.name}});
+                    await s_candidate.destroy();
+                    
+                }
+                
                 // Generate new seed-data - taks care of redis
                 await genSeedData('admin');
                 await genSeedData('results');
@@ -110,7 +113,7 @@ module.exports = async (data, callback) => {
 
                     if (deleted === -1) {
                         //// Delete pictures from mongodb
-                        await Picture.findByIdAndRemove({ userName: candidate.name });
+                        await Picture.findOneAndRemove({ userName: candidate.name });
                         /// Delete candidates not in the list
                         await Candidate.destroy({ where: { name: candidate.name } });
                     } else {

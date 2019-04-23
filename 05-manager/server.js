@@ -48,10 +48,14 @@ let pulseBuffer = [];
 const bufferLimit = 1;
 
 // On initialisation, publish for seed-data and wait for response
-redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'voters' } }));
-redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'admin' } }));
-redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'results' } }));
-redisPublisher.publish('worker', JSON.stringify({ message: 'voterIds', data: { voterIds: true } }));
+
+setTimeout(() => { // Wait for worker full connectivity
+    redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'voters' } }));
+    redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'admin' } }));
+    redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'results' } }));
+    redisPublisher.publish('worker', JSON.stringify({ message: 'voterIds', data: { voterIds: true } }));
+}, 7000);
+
 
 // ----- redisEvents ------ //
 redisSubscriber.on('message', async (channel, message) => {
@@ -66,11 +70,13 @@ redisSubscriber.on('message', async (channel, message) => {
         switch (message.type) {
             // message object is { type: '', data: object}
             case 'shutdown':
-                await axios.default({
-                    method: 'post',
-                    url: `wsserver://${env.WSSERVER}:3003/shutdown`,
-                    data: { shutdown: message.status }
-                });
+                // DO NOTHING, since empty data is sent to ws-server
+                // await axios.default({
+                //     method: 'post',
+                //     url: `wsserver://${env.WSSERVER}:3003/shutdown`,
+                //     data: { shutdown: message.status }
+                // });
+
                 break;
             case 'seed-data':
                 // Should update frequently (on every admin and voter update)
@@ -111,6 +117,13 @@ redisSubscriber.on('message', async (channel, message) => {
                 break;
             case 'update':
                 // Should update frequently (on every admin and voter update)
+
+                if (message.data.voterIds) {
+
+                    voterIds = message.data.voterIds;
+                }
+
+
                 if (message.data.type === 'pulse') {
                     pulseBuffer.push(message.data);
 
@@ -185,7 +198,6 @@ app.get('/', (req, res) => {
     res.send('manager healthy');
 });
 
-
 app.post('/get-seed-data', (req, res) => { // Might need a direct route
     if (!req.body || !req.body.type) {
         res.status(401).send('Body or type is missing in request body')
@@ -197,8 +209,13 @@ app.post('/get-seed-data', (req, res) => { // Might need a direct route
         activeStatus: process.env.VOTING_ACTIVE
     });
 
+
+    if (!req.body.noAdmin) {
+        // Prevent cyclic redundancy
+        redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'admin' } }));
+    }
+
     redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'voters' } }));
-    redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'admin' } }));
     redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'results' } }));
 
     let data = [];
@@ -211,17 +228,43 @@ app.post('/get-seed-data', (req, res) => { // Might need a direct route
 });
 
 app.post('/voter-in', async (req, res) => {
+
+    // Checks
+
     if (!req.body || !req.body.id) {
         res.status(401).send('Body or id is missing in request body')
         return;
     }
+
+    // In case someone hacks client checks
+    if (Object.keys(req.body).length === 1) {
+        res.status(401).send('Your vote is not valid, please try again later');
+        return;
+    }
+
+    if (req.body.id.length < 5) {
+        res.status(401).send('Please enter an id of 5 or more characters');
+        return;
+    }
+
+    // For database checks and uniformity
+    req.body.id = String(req.body.id).trim().toLowerCase();
+
+    const unwantedCharacters = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+
+    if (unwantedCharacters.test(req.body.id)) {
+        res.status(401).send('You id has unexpected characters, please reformat and try again');
+        return;
+    }
+
+    // Checks
 
     console.log(`MANAGER: Voter in data from VOTER client ---- '/voter-in' route, current 'process.env.VOTING_ACTIVE' value`, {
         body: req.body,
         activeStatus: process.env.VOTING_ACTIVE
     });
 
-    if (!process.env.VOTING_ACTIVE) {
+    if (seedData['voters'].length === 0) {
         res.status(403).send('Voting process stopped');
         return;
     }
@@ -231,7 +274,8 @@ app.post('/voter-in', async (req, res) => {
     try {
 
         if (voterIds.includes(req.body.id)) {
-            return res.status(401).send('Thank you, you already voted');
+            res.status(401).send('Thank you, you already voted');
+            return;
         }
 
         // If no
@@ -293,6 +337,12 @@ app.post('/admin-in', passport.authenticate('jwt', {
         body: req.body,
         activeStatus: process.env.VOTING_ACTIVE
     });
+    // Changed here
+    if (!process.env.VOTING_ACTIVE && !req.body.hasOwnProperty('shutdown')) {
+        res.status(401).send('Voting Process is on shutdown, please start process to submit data');
+        return;
+    }
+
 
     try {
         // Admin can shut down voting process or make changes
@@ -301,17 +351,13 @@ app.post('/admin-in', passport.authenticate('jwt', {
         if (req.body.hasOwnProperty('shutdown')) {
 
             if (req.body.shutdown) {
+                // Worke should return empty data for everyone;
                 redisPublisher.publish('worker', JSON.stringify({ message: 'shutdown', data: { shutdown: req.body.shutdown } }));
 
-                await axios.default({
-                    method: 'post',
-                    url: `${env.WSSERVER}/shutdown`,
-                    data: { shutdown: req.body.shutdown }
-                });
             }
-            process.env.VOTING_ACTIVE = req.body.shutdown;
+            process.env.VOTING_ACTIVE = String(req.body.shutdown);
 
-        } else {
+        } else { // Updates to voting data
             // Admin in object isarray object of  [{ category: 'A', type: 'Add', candidates: [...]}]
             //// send this info to worker - who should send back data through pub-sub
 

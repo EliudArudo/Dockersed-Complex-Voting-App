@@ -10,6 +10,7 @@ const genSeedData = async (forWho) => {
         const Candidates = await Candidate.findAll().map(el => el.get({ plain: true }));
 
         if (!Candidates || Candidates.length === 0) {
+            await setHash('seed-data', forWho, JSON.stringify([]));
             return [];
         }
 

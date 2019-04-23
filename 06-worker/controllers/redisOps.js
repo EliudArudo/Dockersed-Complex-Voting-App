@@ -50,7 +50,7 @@ const set = async (key, value) => {
     try {
         await redisClient.set(key, value);
 
-        return res;
+        return;
     } catch (e) {
         throw new Error(e);
     }

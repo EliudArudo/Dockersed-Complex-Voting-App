@@ -38,7 +38,7 @@
         <span
           class="bolder"
           :key="data.currentPercentage"
-        >{{data.currentVotes.toLocaleString()}} votes</span>
+        >{{data.currentVotes.toLocaleString() + vote(data.currentVotes)}}</span>
       </transition>
       <v-spacer></v-spacer>
       <v-tooltip bottom>
@@ -63,7 +63,11 @@ import { Vue, Component } from "vue-property-decorator";
 @Component({
   props: ["data", "ikey"]
 })
-export default class PartyComponent extends Vue {}
+export default class PartyComponent extends Vue {
+  vote(number) {
+    return number === 1 ? " vote" : " votes";
+  }
+}
 </script>
 
 <style lang="scss">

@@ -46,7 +46,7 @@
 import { Vue, Component } from "vue-property-decorator";
 
 @Component({
-  props: ["candidateInfo"]
+  props: ["candidateInfo", "categories"]
 })
 export default class UpdateCandidateComponent extends Vue {
   candidate_name = null;
@@ -168,6 +168,7 @@ export default class UpdateCandidateComponent extends Vue {
           };
         } else {
           /// If there's no image
+          file_input_element.value = "";
         }
       });
     });
@@ -202,20 +203,26 @@ export default class UpdateCandidateComponent extends Vue {
     }
 
     /// Make sure no two parties are in the same category
+    // All canidateInfos should have a parent --- ALL
     const partyExists = this.candidateInfo.parent.candidates.findIndex(
       person =>
         person.party.toLowerCase().trim() ===
         this.candidate_party.toLowerCase().trim()
     );
 
+    // All canidateInfos should have a parent --- ALL
     const nameExists = this.candidateInfo.parent.candidates.findIndex(
       person =>
         person.name.toLowerCase().trim() ===
         this.candidate_name.toLowerCase().trim()
     );
 
+    // Manual check here
     if (partyExists !== -1 && !this.candidateInfo.item) {
-      this.$emit("notify", "A candidate with the party already exists");
+      this.$emit(
+        "notify",
+        "Two candidates cannot share the same party one category"
+      );
       return;
     }
 
@@ -223,6 +230,10 @@ export default class UpdateCandidateComponent extends Vue {
       this.$emit("notify", "A candidate with the same name already exists");
       return;
     }
+
+    // Check 2 -> Whether name exists in category, or anywhere
+    // this.candidate_name
+    // this.categories
 
     let data = { ...this.candidateInfo };
 

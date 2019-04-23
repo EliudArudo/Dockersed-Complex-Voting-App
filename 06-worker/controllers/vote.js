@@ -12,19 +12,28 @@ module.exports = async (data) => {
         const categoryArray = [];
         for (const category in data) {
             if (category !== 'id') {
-                let candidate = await Candidate.find({ name: data[category], category });
-                candidate = candidate[0];
+                let candidate = await Candidate.findOne({ where: { name: data[category], category } });
 
                 if (candidate) {
                     candidate.currentVotes++;
                     await candidate.save();
 
                     let prevList = await VoterId.findOne({ name: 'all' });
-                    prevList = prevList.array;
-                    await VoterId.findOneAndUpdate({ name: 'all' }, { $set: { array: prevList } });
 
-                    const prevList2 = await get('voterIds');
-                    prevList2.push(data.id);
+                    if (!prevList) { // meaning nothing was found
+                        await new VoterId({ name: 'all', array: [] }).save();
+                        prevList = await VoterId.findOne({ name: 'all' });
+                    }
+
+                    prevList.array = prevList.array.push(data["id"]);
+                    prevList.save();
+
+                    let prevList2 = await get('voterIds');
+                    if (!prevList2) {
+                        await set('voterIds', []);
+                        prevList2 = await get('voterIds');
+                    }
+                    prevList2.push(data["id"]);
                     set('voterIds', prevList2);
 
                     categoryArray.push(category);
@@ -32,22 +41,29 @@ module.exports = async (data) => {
             }
         }
 
+        // No need to update voters data;
         const adminData = await genSeedData('admin');
         const resultsData = await genSeedData('results');
 
+        const voterIds = await get('voterIds');
+
         for (const category of categoryArray) {
-            const adminPulse = adminData.find(item => item.category === category);
-            const resultsPulse = resultsData.find(item => item.category === category);
+            const adminPulse = adminData.find(item => item.name === category);
+            const resultsPulse = resultsData.find(item => item.name === category);
 
-            redisPublisher.publish('response', JSON.stringify({
-                type: 'update',
-                data: { room: 'admin', type: 'pulse', data: adminPulse } // should be an array object
-            }));
+            if (adminPulse) {
+                redisPublisher.publish('response', JSON.stringify({
+                    type: 'update',
+                    data: { room: 'admin', type: 'pulse', data: adminPulse, voterIds } // should be an array object
+                }));
+            }
 
-            redisPublisher.publish('response', JSON.stringify({
-                type: 'update',
-                data: { room: 'results', type: 'pulse', data: resultsPulse } // should be an array object
-            }));
+            if (resultsPulse) {
+                redisPublisher.publish('response', JSON.stringify({
+                    type: 'update',
+                    data: { room: 'results', type: 'pulse', data: resultsPulse, voterIds } // should be an array object
+                }));
+            }
         }
 
         return;

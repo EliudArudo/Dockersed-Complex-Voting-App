@@ -143,7 +143,7 @@ export default class Home extends Vue {
     if (data) {
       this.refreshAllData(data);
     }
-
+ 
     socket.on("update", data => {
       console.log("RESULTS: Got new Updates from WS-SERVER", { data });
 
@@ -156,13 +156,15 @@ export default class Home extends Vue {
       }
     });
 
-    socket.on("seed-data", data => {
-      console.log("RESULTS: Got seed data from WS-SERVER -> after", { data });
 
-      if (!data || !data.data || data.data.length === 0) {
+    socket.on("shutdown", data => {
+      console.log("RESULTS: Shutdown signal is:", { data });
+
+      if (data) {
         this.$router.push({ name: "splashscreen" });
       }
     });
+
 
     //  --------- UNCOMMENT TO START INCOMING VOTES LIVE UPDATES ------
     // setTimeout(() => {

@@ -3,7 +3,7 @@
     <v-card-title class="pb-0 clickable">
       <span @click="click('category', 'update', null, category, ikey, null)">{{category.name}}</span>
       <v-spacer></v-spacer>
-      <span class="light-grey">{{humanize(category.currentVotes)}} votes</span>
+      <span class="light-grey">{{humanize(category.currentVotes) + vote(category.currentVotes)}}</span>
     </v-card-title>
 
     <v-list three-line>
@@ -38,7 +38,7 @@
               color="grey"
               @click="click('candidate', 'update', candidate, category, ikey, (ikey + 'card' + index))"
             >settings</v-icon>
-            <v-list-tile-action-text>{{candidate.currentVotes.toLocaleString()}} votes</v-list-tile-action-text>
+            <v-list-tile-action-text>{{candidate.currentVotes.toLocaleString() + vote(candidate.currentVotes)}}</v-list-tile-action-text>
           </v-list-tile-action>
         </v-list-tile>
         <v-divider :key="index"></v-divider>
@@ -108,6 +108,10 @@ export default class CategoryComponent extends Vue {
     // Do nothing
   }
 
+  vote(number) {
+    return number === 1 ? " vote" : " votes";
+  }
+
   click(type, action, item, parent, parentId, itemId) {
     const data = {
       type, // canditate // category
@@ -117,6 +121,8 @@ export default class CategoryComponent extends Vue {
       parentId,
       itemId
     };
+
+    // 'candidate', 'add', null, category, ikey
 
     this.$emit("clicked", data);
   }

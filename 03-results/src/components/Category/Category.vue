@@ -12,7 +12,7 @@
 
       <div class="ml-3 black--text total-category-votes">
         <transition name="slide-fade" mode="out-in">
-          <span :key="data.currentVotes">{{humanize(data.currentVotes)}} votes</span>
+          <span :key="data.currentVotes">{{humanize(data.currentVotes) + vote(data.currentVotes)}}</span>
         </transition>
       </div>
 
@@ -98,6 +98,10 @@ export default class CategoryComponent extends Vue {
         : numeral(number).format("0.0 a");
 
     return format;
+  }
+
+  vote(number) {
+    return number === 1 ? " vote" : " votes";
   }
 }
 </script>

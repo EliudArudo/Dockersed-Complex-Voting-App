@@ -56,13 +56,20 @@
 
       <v-footer class="submit-area" fixed>
         <div class="submit-items">
-          <v-btn flat large color="primary" @click="submitAll">SUBMIT CHANGES</v-btn>
+          <v-btn
+            flat
+            large
+            color="primary"
+            :disabled="notifications.length === 0"
+            @click="submitAll"
+          >SUBMIT CHANGES</v-btn>
           <v-btn
             flat
             large
             :color="votingShutdown? 'success': 'error'"
+            :disabled="votingShutdown"
             @click="votingProcess(!votingShutdown)"
-          >{{votingShutdown? 'START VOTING PROCESS' : 'SHUTDOWN VOTING PROCESS'}}</v-btn>
+          >{{votingShutdown? 'VOTING PROCESS IS DOWN' : 'SHUTDOWN VOTING PROCESS'}}</v-btn>
         </div>
       </v-footer>
     </v-container>
@@ -75,6 +82,7 @@
       <UpdateCandidate
         @notify="openToast"
         :key="cheatcode"
+        :categories="categories"
         :candidateInfo="candidateInfo"
         @dismiss="candidateClosed"
       />
@@ -248,6 +256,8 @@ export default class Home extends Vue {
   categories = [];
   backup_categories = [];
 
+  temp_shutdown = false;
+
   @Watch("shutdownDialog")
   onShuttingDown(val) {
     if (val) {
@@ -373,15 +383,6 @@ export default class Home extends Vue {
 
     this.resetData(this.$route.params.data);
 
-    // Will add 'seed-data' listener later
-    socket.on("update", data => {
-      console.log("ADMIN: Got new Updates from WS-SERVER", { data });
-
-      if (data && data.data) {
-        this.pulseProcessor(data.data);
-      }
-    });
-
     socket.on("seed-data", data => {
       console.log("ADMIN: Got seed data from WS-SERVER", { data });
 
@@ -390,6 +391,14 @@ export default class Home extends Vue {
       }
     });
 
+    // Will add 'seed-data' listener later
+    socket.on("update", data => {
+      console.log("ADMIN: Got new Updates from WS-SERVER", { data });
+
+      if (data && data.data) {
+        this.pulseProcessor(data.data);
+      }
+    });
     //  --------- UNCOMMENT TO START INCOMING VOTES LIVE UPDATES ------
     // setInterval(() => {
     //   /// user this.pulseProcessor(category) in PROD
@@ -475,9 +484,10 @@ export default class Home extends Vue {
 
         this.pulseAlert(`category${categoryIndex}`);
 
-        setTimeout(() => {
-          this.pulseAlert(`category${categoryIndex}card${candidateIndex}`);
-        }, 300);
+        // Category only
+        // setTimeout(() => {
+        //   this.pulseAlert(`category${categoryIndex}card${candidateIndex}`);
+        // }, 300);
 
         /// Imported from simulator
       } else {
@@ -500,13 +510,20 @@ export default class Home extends Vue {
   pulseAlert(id) {
     const element = document.getElementById(id);
 
-    const prevShadow = element.style.boxShadow;
+    const prevShadow = element.style.boxShadow.slice(); // create a copy;
 
     element.style.boxShadow = "0 0 10px #1976d2";
 
     setTimeout(() => {
       // List item
-      element.style.boxShadow = prevShadow;
+      // element.style.boxShadow = prevShadow;
+
+      if (!id.includes("card")) {
+        element.style.boxShadow =
+          "0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12)";
+      } else {
+        element.style.boxShadow = "none";
+      }
     }, 2000);
   }
 
@@ -681,7 +698,23 @@ export default class Home extends Vue {
     // /// DEVELOPMENT PURPOSES
     // clearInterval(this.votingSimulator);
     // /// DEVELOPMENT PURPOSES
-    this.$router.push({ name: "login" });
+    // this.$router.push({ name: "login" });
+
+    /// Changed here
+    axios
+      .default({
+        method: "post",
+        url: "/manager/admin-in",
+        data: { shutdown: this.temp_shutdown }
+      })
+      .then(() => {
+        this.stopLoading();
+      })
+      .catch(e => {
+        this.stopLoading();
+        console.log(e);
+        this.openToast(e.response ? e.response.data : e);
+      });
   }
 
   start() {
@@ -810,44 +843,28 @@ export default class Home extends Vue {
       }
     }
 
-    console.log(`ADMIN: About to submit shutdown data to MANAGER`, {
-      shutdown: data.shutdown
-    });
-
     if (data.shutdown === true) {
-      axios
-        .default({
-          method: "post",
-          url: "/manager/admin-in",
-          data: { shutdown: data.shutdown }
-        })
-        .then(() => {
-          this.stopLoading();
-          this.startShutDown();
-        })
-        .catch(e => {
-          this.stopLoading();
-          console.log(e);
-          this.openToast(e.response ? e.response.data : e);
-        });
+      // Changed here
+      this.temp_shutdown = data.shutdown;
+      this.startShutDown();
     } else if (data.shutdown === false) {
       // this.start(); -> Was for simulation purposes
       // If false - do nothing, just unlock and start
-      axios
-        .default({
-          method: "post",
-          url: "/manager/admin-in",
-          data: { shutdown: data.shutdown }
-        })
-        .then(() => {
-          this.stopLoading();
-          this.start();
-        })
-        .catch(e => {
-          this.stopLoading();
-          console.log(e);
-          this.openToast(e.response ? e.response.data : e);
-        });
+      // axios
+      //   .default({
+      //     method: "post",
+      //     url: "/manager/admin-in",
+      //     data: { shutdown: data.shutdown }
+      //   })
+      //   .then(() => {
+      //     this.stopLoading();
+      //     this.start();
+      //   })
+      //   .catch(e => {
+      //     this.stopLoading();
+      //     console.log(e);
+      //     this.openToast(e.response ? e.response.data : e);
+      //   });
     }
   }
 
@@ -1116,6 +1133,8 @@ export default class Home extends Vue {
           this.stopLoading();
           this.openToast("You're welcome!!!");
           this.refresh();
+          // If we submit, that means voting shutdown is false;
+          this.votingShutdown = false;
         })
         .catch(e => {
           this.stopLoading();
