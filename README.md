@@ -41,4 +41,9 @@ To check if all configurations were loaded correctly, use the below command to l
 $ docker-compose config
 ```
 
-From here, you can access the apps from 'http://localhost:80'
+
+Access clients from these urls:
+Voter: 'http://localhost:80/voter/'
+Admin: 'http://localhost:80/admin/'
+Results: 'http://localhost:80/results/'
+
