@@ -186,7 +186,7 @@ export default class LoginPage extends Vue {
         const message = e.response ? e.response.data : e;
 
         this.stopLoading();
-        this.openToast(e);
+        this.openToast(message);
       });
   }
 }

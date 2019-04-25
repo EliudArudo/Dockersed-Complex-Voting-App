@@ -305,8 +305,15 @@ app.post('/admin-login', (req, res) => {
 
     console.log(`MANAGER: Admin client trying to login ---- '/admin-login' route, current 'process.env.VOTING_ACTIVE' value`, {
         body: req.body,
-        activeStatus: process.env.VOTING_ACTIVE
+        activeStatus: process.env.VOTING_ACTIVE,
+        adminEmail: env.ADMIN_EMAIL,
+        asminPassword: env.ADMIN_PASSWORD
     });
+
+    if (!env.ADMIN_EMAIL || !env.ADMIN_PASSWORD) {
+        res.status(500).send('Server not yet initialised, contact your DevOps team for more info');
+        return;
+    }
 
 
     if (req.body.email !== env.ADMIN_EMAIL || req.body.password !== env.ADMIN_PASSWORD) {
