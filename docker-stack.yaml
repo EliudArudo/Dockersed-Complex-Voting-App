@@ -4,6 +4,10 @@ services:
     image: eliudarudo/complex-voting-app-nginx
     ports:
       - "80:80"
+    depends_on:
+      - admin
+      - voter
+      - wsserver
     networks:
       - frontend
     deploy:
@@ -12,6 +16,7 @@ services:
         parallelism: 2
       restart_policy:
         condition: on-failure  
+        delay: 60s
         
   voter:
     image: eliudarudo/complex-voting-app-voter
@@ -59,7 +64,7 @@ services:
         condition: on-failure  
 
   wsserver:
-    image: eliudarudo/complex-voting-app-wsserver
+    image: eliudarudo/complex-voting-app-ws-server
     networks:
         - frontend
     ports:
@@ -90,7 +95,7 @@ services:
         parallelism: 2
       restart_policy:
         condition: on-failure
-    env_file: ./env/manager.env
+    # env_file: ./env/manager.env
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -110,7 +115,7 @@ services:
         parallelism: 2
       restart_policy:
         condition: on-failure  
-    env_file: ./env/worker.env
+    # env_file: ./env/worker.env
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -128,14 +133,14 @@ services:
     ports:
       - "27017"
   redis:
-    image: redis:alpine
+    image: redis:latest
     networks:
       - backend
     ports:
       - "6379"
   postgres:
     image: postgres:latest
-    env_file: ./env/postgres.env
+    # env_file: ./env/postgres.env
     networks:
       - backend
     volumes:

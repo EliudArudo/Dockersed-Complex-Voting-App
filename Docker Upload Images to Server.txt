@@ -1,0 +1,23 @@
+docker build -t eliudarudo/complex-voting-app-nginx:latest -t eliudarudo/complex-voting-app-nginx:$SHA -f ./00-nginx/Dockerfile ./00-nginx
+docker build -t eliudarudo/complex-voting-app-voter:latest -t eliudarudo/complex-voting-app-voter:$SHA -f ./01-voter/Dockerfile ./01-voter
+docker build -t eliudarudo/complex-voting-app-admin:latest -t eliudarudo/complex-voting-app-admin:$SHA -f ./02-admin/Dockerfile ./02-admin
+docker build -t eliudarudo/complex-voting-app-results:latest -t eliudarudo/complex-voting-app-results:$SHA -f ./03-results/Dockerfile ./03-results
+docker build -t eliudarudo/complex-voting-app-ws-server:latest -t eliudarudo/complex-voting-app-ws-server:$SHA -f ./04-ws-server/Dockerfile ./04-ws-server
+docker build -t eliudarudo/complex-voting-app-manager:latest -t eliudarudo/complex-voting-app-manager:$SHA -f ./05-manager/Dockerfile ./05-manager
+docker build -t eliudarudo/complex-voting-app-worker:latest -t eliudarudo/complex-voting-app-worker:$SHA -f ./06-worker/Dockerfile ./06-worker
+
+docker push eliudarudo/complex-voting-app-nginx:latest &&
+docker push eliudarudo/complex-voting-app-voter:latest &&
+docker push eliudarudo/complex-voting-app-admin:latest &&
+docker push eliudarudo/complex-voting-app-results:latest &&
+docker push eliudarudo/complex-voting-app-ws-server:latest &&
+docker push eliudarudo/complex-voting-app-manager:latest &&
+docker push eliudarudo/complex-voting-app-worker:latest
+
+docker push eliudarudo/complex-voting-app-nginx:$SHA &&
+docker push eliudarudo/complex-voting-app-voter:$SHA &&
+docker push eliudarudo/complex-voting-app-admin:$SHA &&
+docker push eliudarudo/complex-voting-app-results:$SHA &&
+docker push eliudarudo/complex-voting-app-ws-server:$SHA &&
+docker push eliudarudo/complex-voting-app-manager:$SHA &&
+docker push eliudarudo/complex-voting-app-worker:$SHA 

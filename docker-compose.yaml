@@ -11,11 +11,13 @@ services:
     restart: always
     build:
       context: ./00-nginx
+    # image: eliudarudo/complex-voting-app-nginx
     ports:
       - '80:80'
   worker:
     build:
       context: ./06-worker
+    # image: eliudarudo/complex-voting-app-worker
     env_file: ./env/worker.env
     volumes:
       - /app/node_modules
@@ -32,6 +34,7 @@ services:
   manager:
     build:
       context: ./05-manager
+    # image: eliudarudo/complex-voting-app-manager
     env_file: ./env/manager.env
     volumes:
       - /app/node_modules  
@@ -44,6 +47,7 @@ services:
   wsserver:
     build:
       context: ./04-ws-server
+    # image: eliudarudo/complex-voting-app-ws-server
     volumes:
       - /app/node_modules   
     environment:
@@ -51,15 +55,18 @@ services:
   admin:
     build:
       context: ./02-admin
+    # image: eliudarudo/complex-voting-app-admin
     volumes:
       - /app/node_modules      
   voter:
     build:
       context: ./01-voter
+    # image: eliudarudo/complex-voting-app-voter
     volumes:
       - /app/node_modules     
   results:
     build:
       context: ./03-results
+    # image: eliudarudo/complex-voting-app-results
     volumes:
       - /app/node_modules
