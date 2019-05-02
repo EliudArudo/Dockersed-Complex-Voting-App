@@ -147,7 +147,6 @@ $ docker service create --name redis -p 6379 --network backend redis:latest
 #manager
 $ docker service create --name manager -p 3004 -e REDIS_HOST=redis -e REDIS_PORT=6379 -e WSSERVER=wsserver -e ADMIN_EMAIL=<YOUR_EMAIL> -e ADMIN_PASSWORD=<YOUR_PASSWORD> -e JWT_SECRET=<YOUR_JWT_SECRET> -e JWT_EXPIRATION=<EXPIRY_TIME_IN_SECONDS> -e VOTING_ACTIVE=<true || false> --network frontend --network backend eliudarudo/complex-voting-app-manager
 
-
 ---- Might need to create volumes first (For mongodb and postgres)----
 $ docker volume create mongodb-data
 $ docker volume create postgres-data

@@ -238,7 +238,8 @@ sequelize
   .then(() => {
     // Remove Candidates table
     console.log('WORKER: Sequelize + postgres initialized');
-    require('./connection/resetDatabases');
+    /// THIS IS THE ERROR!!!!!
+    // require('./connection/resetDatabases');
   })
   .catch(console.log)
 
