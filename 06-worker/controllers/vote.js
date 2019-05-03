@@ -8,6 +8,22 @@ const VoterId = require('../models/mongodb/votersId');
 
 module.exports = async (data) => {
     try {
+        // -------------- ID checks here ----------------- //
+        let prevList2 = await get('voterIds');
+        if (!prevList2) {
+            await set('voterIds', []);
+            prevList2 = await get('voterIds');
+        }
+
+        ///// Concurrency flaw solved here
+        if (prevList2.includes(data["id"])) {
+            return;
+        }
+        ///// Concurrency flaw solved here
+
+        prevList2.push(data["id"]);
+        set('voterIds', prevList2);
+        // -------------- ID checks here ----------------- //
 
         const categoryArray = [];
         for (const category in data) {
@@ -27,14 +43,6 @@ module.exports = async (data) => {
 
                     prevList.array = prevList.array.push(data["id"]);
                     prevList.save();
-
-                    let prevList2 = await get('voterIds');
-                    if (!prevList2) {
-                        await set('voterIds', []);
-                        prevList2 = await get('voterIds');
-                    }
-                    prevList2.push(data["id"]);
-                    set('voterIds', prevList2);
 
                     categoryArray.push(category);
                 }

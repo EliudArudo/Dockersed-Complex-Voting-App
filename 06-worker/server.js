@@ -11,38 +11,9 @@ const admin = require('./controllers/adminOps');
 const Candidate = require('./models/postgres/candidate');
 
 
-///
-function timeout(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function sleep(time) {
-  await timeout(time);
-  return;
-}
-///
-
-
 redisSubscriber.on('message', async (channel, message) => {
 
   try {
-
-    const randomWaitingTime = Math.floor(Math.random() * 1000);
-    console.log(`------------------------------ Sleeping for ${randomWaitingTime} seconds ----------------------------`);
-    await sleep(randomWaitingTime);
-    console.log(`------------------------------ Sleeping Done ----------------------------`);
-
-    //// Scalability solution /////
-    // -> Each request should be unique
-    const uniqueRequest = await redisClient.hget("unique_requests", JSON.stringify(message));
-
-    if (uniqueRequest) {
-      // If there's the request, return
-      return;
-    }
-
-    await redisClient.hset("unique_requests", JSON.stringify(message), "true");
-    //// Scalability solution /////
 
 
     message = JSON.parse(message);
@@ -259,13 +230,7 @@ redisSubscriber.on('message', async (channel, message) => {
   } catch (e) {
     console.log(e);
     throw new Error(e);
-  } finally {
-
-    //// Scalability solution /////
-    // Delete the unique request
-    await redisClient.hdel("unique_requests", JSON.stringify(message));
-    //// Scalability solution /////
-  }
+  } 
 
 });
 redisSubscriber.subscribe('worker');
