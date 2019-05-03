@@ -129,8 +129,10 @@ redisSubscriber.on('message', async (channel, message) => {
           // Pulse Function: use Vote objects to generate Pulse objects
        */
 
+        /// Adds random sleeping time so no two votes are the same
         const randomSeconds = Math.floor((Math.random() * 100) + new Date().getSeconds());
         await relax(randomSeconds);
+        /// Adds random sleeping time so no two votes are the same
 
         console.log(`--------- Id: ${data.data.id}, time: ${new Date().toISOString()}`);
         await vote(data.data);
