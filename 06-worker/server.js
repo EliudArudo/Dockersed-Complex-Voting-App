@@ -28,7 +28,9 @@ redisSubscriber.on('message', async (channel, message) => {
   try {
 
     const randomWaitingTime = Math.floor(Math.random() * 1000);
+    console.log(`------------------------------ Sleeping for ${randomWaitingTime} seconds ----------------------------`);
     await sleep(randomWaitingTime);
+    console.log(`------------------------------ Sleeping Done ----------------------------`);
 
     //// Scalability solution /////
     // -> Each request should be unique
