@@ -65,15 +65,15 @@ module.exports = async (data, callback) => {
 
                 // Delete category from Candidates table
                 const candidates = await Candidate.findAll({ where: { category: notification.category } }).map(el => el.get({ plain: true }));
-        
+
                 for (const candidate of candidates) {
                     await Picture.findOneAndRemove({ userName: candidate.name });
 
-                    const s_candidate = await Candidate.findOne({where: { name: candidate.name}});
+                    const s_candidate = await Candidate.findOne({ where: { name: candidate.name } });
                     await s_candidate.destroy();
-                    
+
                 }
-                
+
                 // Generate new seed-data - taks care of redis
                 await genSeedData('admin');
                 await genSeedData('results');

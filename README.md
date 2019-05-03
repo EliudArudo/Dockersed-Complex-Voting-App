@@ -128,28 +128,20 @@ $ docker network create --driver overlay backend
 $ docker service create --name <service-name> -p 80:80 --alias <alias-name> --network <network-name> -e <env-variables>=<env-value> -e <env-variables>=<env-value> <image>
 
 // Docker services for this project
-#admin
-$ docker service create -d --name admin --network frontend --publish 3001 eliudarudo/complex-voting-app-admin
-
+--- Frontend clients ---
 #voter
 $ docker service create --name voter -p 3000 --network frontend eliudarudo/complex-voting-app-voter
 
+#admin
+$ docker service create -d --name admin --network frontend --publish 3001 eliudarudo/complex-voting-app-admin
 
 #results
 $ docker service create --name results -p 3002 --network frontend eliudarudo/complex-voting-app-results
-
-#wsserver
-$ docker service create --name wsserver -p 3003 -e MANAGER=manager --network frontend eliudarudo/complex-voting-app-ws-server 
  
+ 
+-- Databases Init --- 
 #redis -- Manager uses redis
 $ docker service create --name redis -p 6379 --network backend redis:latest 
-
-#manager
-$ docker service create --name manager -p 3004 -e REDIS_HOST=redis -e REDIS_PORT=6379 -e WSSERVER=wsserver -e ADMIN_EMAIL=<YOUR_EMAIL> -e ADMIN_PASSWORD=<YOUR_PASSWORD> -e JWT_SECRET=<YOUR_JWT_SECRET> -e JWT_EXPIRATION=<EXPIRY_TIME_IN_SECONDS> -e VOTING_ACTIVE=<true || false> --network frontend --network backend eliudarudo/complex-voting-app-manager
-
----- Might need to create volumes first (For mongodb and postgres)----
-$ docker volume create mongodb-data
-$ docker volume create postgres-data
 
 #mongodb -- used by worker
 $ docker service create --name mongodb -p 27017 --network backend mongo:latest 
@@ -161,6 +153,14 @@ $ docker service create --name postgres -p 5432 --network backend -e POSTGRES_US
 #worker
 $ docker service create --name worker -e REDIS_HOST=redis -e REDIS_PORT=6379 -e MONGO_URI=mongodb -e MONGO_PORT=27017 -e MONGO_DB=voter_data -e PGHOST=postgres -e PGPORT=5432 -e PGUSER=<POSTGRES_USERNAME> -e PGPASSWORD=<POSTGRES_PASSWORD> -e PGDATABASE=<PG_DATABASE_NAME> --network backend eliudarudo/complex-voting-app-worker 
 
+#manager
+$ docker service create --name manager -p 3004 -e REDIS_HOST=redis -e REDIS_PORT=6379 -e WSSERVER=wsserver -e ADMIN_EMAIL=<YOUR_EMAIL> -e ADMIN_PASSWORD=<YOUR_PASSWORD> -e JWT_SECRET=<YOUR_JWT_SECRET> -e JWT_EXPIRATION=<EXPIRY_TIME_IN_SECONDS> -e VOTING_ACTIVE=<true || false> --network frontend --network backend eliudarudo/complex-voting-app-manager
+
+#wsserver
+$ docker service create --name wsserver -p 3003 -e MANAGER=manager --network frontend eliudarudo/complex-voting-app-ws-server
+
+
+--- Should be the last, to find other services ---
 # nginx
 $ docker service create --name nginx -p 80:80 --network frontend eliudarudo/complex-voting-app-nginx 
 

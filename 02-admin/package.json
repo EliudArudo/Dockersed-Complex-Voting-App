@@ -17,13 +17,14 @@
     "vue-router": "^3.0.1",
     "vue-spinner": "^1.0.3",
     "vuetify": "^1.5.5",
-    "vuex": "^3.0.1"
+    "vuex": "^3.0.1",
+    "tar": ">=4.4.2"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.5.0",
     "@vue/cli-plugin-typescript": "^3.5.0",
-    "@vue/cli-service": "^3.5.0",
-    "node-sass": "^4.9.0",
+    "@vue/cli-service": "^3.7.0",
+    "node-sass": "^4.12.0",
     "sass-loader": "^7.1.0",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.1",

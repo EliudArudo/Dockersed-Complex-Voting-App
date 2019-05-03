@@ -12,15 +12,27 @@ const Candidate = require('./models/postgres/candidate');
 
 redisSubscriber.on('message', async (channel, message) => {
 
-  message = JSON.parse(message);
-
-  console.log('WORKER: Got message from MANAGER', { message });
-
-  const data = message.data;
-  message = message.message;
-
-
   try {
+
+    //// Scalability solution /////
+    // -> Each request should be unique
+    const uniqueRequest = await redisClient.hget("unique_requests", JSON.stringify(message));
+
+    if (uniqueRequest) {
+      // If there's the request, return
+      return;
+    }
+
+    await redisClient.hset("unique_requests", JSON.stringify(message), "true");
+    //// Scalability solution /////
+
+
+    message = JSON.parse(message);
+
+    console.log('WORKER: Got message from MANAGER', { message });
+
+    const data = message.data;
+    message = message.message;
 
     let s_data, s_data2, s_data3;
 
@@ -225,9 +237,16 @@ redisSubscriber.on('message', async (channel, message) => {
 
     }
 
+
   } catch (e) {
     console.log(e);
     throw new Error(e);
+  } finally {
+
+    //// Scalability solution /////
+    // Delete the unique request
+    await redisClient.hdel("unique_requests", JSON.stringify(message));
+    //// Scalability solution /////
   }
 
 });
