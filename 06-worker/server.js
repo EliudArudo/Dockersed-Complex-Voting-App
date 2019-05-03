@@ -27,7 +27,7 @@ redisSubscriber.on('message', async (channel, message) => {
 
   try {
 
-    const randomWaitingTime = Math.floor(Math.random() * 3000);
+    const randomWaitingTime = Math.floor(Math.random() * 1000);
     await sleep(randomWaitingTime);
 
     //// Scalability solution /////
