@@ -10,6 +10,14 @@ const admin = require('./controllers/adminOps');
 
 const Candidate = require('./models/postgres/candidate');
 
+/// Random timing function
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+async function relax(time) {
+  await delay(time);
+}
+/// Random timing function
+
 
 redisSubscriber.on('message', async (channel, message) => {
 
@@ -120,6 +128,9 @@ redisSubscriber.on('message', async (channel, message) => {
           // MONGODB - add id to document array
           // Pulse Function: use Vote objects to generate Pulse objects
        */
+
+        const randomSeconds = Math.floor((Math.random() * 100) + new Date().getSeconds());
+        await relax(randomSeconds);
 
         console.log(`--------- Id: ${data.data.id}, time: ${new Date().toISOString()}`);
         await vote(data.data);
