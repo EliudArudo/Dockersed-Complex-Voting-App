@@ -10,9 +10,25 @@ const admin = require('./controllers/adminOps');
 
 const Candidate = require('./models/postgres/candidate');
 
+
+///
+function timeout(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function sleep(time) {
+  await timeout(time);
+  return;
+}
+///
+
+
 redisSubscriber.on('message', async (channel, message) => {
 
   try {
+
+    const randomWaitingTime = Math.floor(Math.random() * 3000);
+    await sleep(randomWaitingTime);
 
     //// Scalability solution /////
     // -> Each request should be unique

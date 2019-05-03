@@ -14,12 +14,8 @@
     "nodemon": "^1.18.10",
     "pg": "^7.8.2",
     "pg-hstore": "^2.3.2",
-    "pushpull": "^2.1.8",
     "redis": "^2.8.0",
     "sequelize": "^5.8.2",
     "tar": ">=4.4.2"
-  },
-  "optionalDependencies": {
-    "hiredis": "^0.5.0"
   }
 }
