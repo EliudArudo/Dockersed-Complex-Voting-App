@@ -121,6 +121,7 @@ redisSubscriber.on('message', async (channel, message) => {
           // Pulse Function: use Vote objects to generate Pulse objects
        */
 
+        console.log(`--------- Id: ${data.data.id}, time: ${new Date().toISOString()}`);
         await vote(data.data);
         return;
 
@@ -230,7 +231,7 @@ redisSubscriber.on('message', async (channel, message) => {
   } catch (e) {
     console.log(e);
     throw new Error(e);
-  } 
+  }
 
 });
 redisSubscriber.subscribe('worker');
