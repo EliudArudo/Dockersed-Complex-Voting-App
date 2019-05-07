@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voter-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: voter
+  template:
+    metadata:
+      labels:
+        component: voter
+    spec:
+      containers:
+        - name: voter
+          image: eliudarudo/complex-voting-app-voter
+          ports:
+            - containerPort: 3000

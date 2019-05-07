@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: manager-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: manager
+  template:
+    metadata:
+      labels:
+        component: manager
+    spec:
+      containers:
+        - name: manager
+          image: eliudarudo/complex-voting-app-manager
+          ports:
+            - containerPort: 3004
+          env:
+            - name: REDIS_HOST
+              value:  redis-cluster-ip-service
+            - name: REDIS_PORT
+              value:  '6379'
+            - name: WSSERVER
+              value:  wsserver-cluster-ip-service
+            - name: ADMIN_EMAIL
+              value:  'admin@test.com'
+            - name: ADMIN_PASSWORD
+              value:  'admin_test'
+            - name: JWT_SECRET
+              value:  'jwt_guy'
+            - name: JWT_EXPIRATION
+              value:  '604800'
+            - name: VOTING_ACTIVE
+              value:  'true'

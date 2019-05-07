@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wsserver-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: wsserver
+  template:
+    metadata:
+      labels: 
+        component: wsserver
+    spec:
+      containers:
+        - name: wsserver
+          image: eliudarudo/complex-voting-app-ws-server
+          ports:
+            - containerPort: 3003
+          env:
+            - name: MANAGER
+              value: manager-cluster-ip-service

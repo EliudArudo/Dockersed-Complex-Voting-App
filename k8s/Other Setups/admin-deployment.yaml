@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-deployment
+spec: 
+  replicas: 1
+  selector:
+    matchLabels:
+      component: admin
+  template:
+    metadata:
+      labels:
+        component: admin
+    spec:
+      containers:
+        - name: admin
+          image: eliudarudo/complex-voting-app-admin
+          ports:
+            - containerPort: 3001
+    

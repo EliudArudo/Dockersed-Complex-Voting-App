@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: worker
+  template:
+    metadata:
+      labels:
+        component: worker
+    spec:
+      containers:
+        - name: worker
+          image: eliudarudo/complex-voting-app-worker
+          env:
+            - name: REDIS_HOST
+              value: redis-cluster-ip-service
+            - name: REDIS_PORT
+              value: '6379'
+            - name: MONGO_URI
+              value: mongodb-cluster-ip-service
+            - name: MONGO_PORT
+              value: '27017'
+            - name: PGHOST
+              value: postgres-cluster-ip-service
+            - name: PGPORT
+              value: '5432'
+            - name: PGUSER
+              value: 'postgres'
+            - name: PGPASSWORD
+              value: 'postgres_password'
+            - name: PGDATABASE
+              value: 'postgres'
+            - name: MONGO_DB
+              value: 'voter_data'
