@@ -191,6 +191,24 @@ $ docker-machine rm <node-name>
 
 ```
 
+> Kubernetes version
+Please make sure your 'kubectl' is working correctly and connected to your local k8s cluster
+```
+# First, cd into k8s folder 
+$ cd k8s
+
+# Initialise the k8s configuration files from two folders 'Initial Setup', then 'Other Setups'
+$ kubectl apply -f 'Initial Setup' && kubectl apply -f 'Other Setups'
+
+# Check the status of your initialised pods using
+$ kubectl get pods
+
+# To check the logging for a specifi pod, get the id of the pod you're interested in using the immediate command shown above, then using the id,
+$ kubect logs <POD-ID>
+
+# To scale up a deployment
+kubectl scale --replicas=<NUMBER> deployment/<DEPLOYMENT-NAME>
+```
 
 
 Access clients from these urls:
