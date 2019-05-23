@@ -17,7 +17,7 @@ const redisPublisher = redisClient.duplicate();
 const redisSubscriber = redisClient.duplicate();
 
 redisClient.on('connect', function () {
-    console.log('MANAGER: redis connected');
+    console.log('MANAGER: Redis connected');
 }).on('error', function (error) {
     console.log(error);
 });

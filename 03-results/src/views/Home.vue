@@ -145,7 +145,6 @@ export default class Home extends Vue {
     }
  
     socket.on("update", data => {
-      console.log("RESULTS: Got new Updates from WS-SERVER", { data });
 
       if (data) {
         if (data.type === "notification") {
@@ -158,7 +157,6 @@ export default class Home extends Vue {
 
 
     socket.on("shutdown", data => {
-      console.log("RESULTS: Shutdown signal is:", { data });
 
       if (data) {
         this.$router.push({ name: "splashscreen" });

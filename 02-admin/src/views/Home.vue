@@ -384,7 +384,6 @@ export default class Home extends Vue {
     this.resetData(this.$route.params.data);
 
     socket.on("seed-data", data => {
-      console.log("ADMIN: Got seed data from WS-SERVER", { data });
 
       if (data) {
         this.resetData(data.data);
@@ -393,7 +392,6 @@ export default class Home extends Vue {
 
     // Will add 'seed-data' listener later
     socket.on("update", data => {
-      console.log("ADMIN: Got new Updates from WS-SERVER", { data });
 
       if (data && data.data) {
         this.pulseProcessor(data.data);
@@ -1068,12 +1066,7 @@ export default class Home extends Vue {
     this.final = false;
     this.totalChanges = [];
     if (e) {
-      /// Changes here
-      console.log(`ADMIN: About to submit notifications to MANAGER - pre`, {
-        notifications: JSON.parse(JSON.stringify(this.notifications)),
-        backup_categories: this.backup_categories
-      });
-
+      
       let notificationsToSend = [...this.notifications].map(item => {
         let index = -1;
         if (this.backup_categories.length > 0) {
@@ -1117,11 +1110,7 @@ export default class Home extends Vue {
       }
 
       notificationsToSend = cleanArray.reverse();
-
-      console.log(`ADMIN: About to submit notifications to MANAGER - post`, {
-        notifications: notificationsToSend
-      });
-
+      
       this.startLoading("Submitting your final changes");
       axios
         .default({

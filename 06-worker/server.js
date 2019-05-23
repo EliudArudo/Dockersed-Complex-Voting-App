@@ -22,11 +22,7 @@ async function relax(time) {
 redisSubscriber.on('message', async (channel, message) => {
 
   try {
-
-
     message = JSON.parse(message);
-
-    console.log('WORKER: Got message from MANAGER', { message });
 
     const data = message.data;
     message = message.message;
@@ -51,13 +47,10 @@ redisSubscriber.on('message', async (channel, message) => {
       //  message = 'seed-data', data.seedData = 'voters | admin | results';
       s_data = await getHash(message, data.seedData);
 
-      // console.log("s_data 1:", s_data);
 
       if (!s_data) {
         s_data = await genSeedData(data.seedData);
       }
-
-      // console.log("s_data 2:", s_data);
 
       redisPublisher.publish('response', JSON.stringify({
         type: 'seed-data',
@@ -130,11 +123,11 @@ redisSubscriber.on('message', async (channel, message) => {
        */
 
         /// Adds random sleeping time so no two votes are the same
-        const randomSeconds = Math.floor((Math.random() * 100) + new Date().getSeconds());
+        let randomSeconds = (Math.random() * 100) + new Date().getSeconds();
+        // Pushed randomnness to extra 2 decimal places rather than previous random number from (1-100)
+        randomSeconds = Number(randomSeconds.toFixed(2));
         await relax(randomSeconds);
         /// Adds random sleeping time so no two votes are the same
-
-        console.log(`--------- Id: ${data.data.id}, time: ${new Date().toISOString()}`);
         await vote(data.data);
         return;
 
@@ -158,9 +151,6 @@ redisSubscriber.on('message', async (channel, message) => {
           s_data = await getHash('seed-data', 'admin');
           s_data2 = await getHash('seed-data', 'voters');
           s_data3 = await getHash('seed-data', 'results');
-
-
-          // console.log("s_data 1:", s_data);
 
           if (!s_data) {
             s_data = await genSeedData('admin');
@@ -253,8 +243,8 @@ sequelize
   .sync()
   .then(() => {
     // Remove Candidates table
-    console.log('WORKER: Sequelize + postgres initialized');
-    /// THIS IS THE ERROR!!!!!
+    console.log('WORKER: Sequelize + Postgres initialized');
+    /// UNCOMMENT TO RESET DATABASE ON EACH NEW WORKER SPAWN
     // require('./connection/resetDatabases');
   })
   .catch(console.log)

@@ -372,16 +372,12 @@ export default class Home extends Vue {
     }
 
     socket.on("update", data => {
-      console.log("VOTER: Got new Updates from WS-SERVER", { data });
-
       if (data && data.data) {
         this.notificationProcessor(data.data);
       }
     });
 
     socket.on("shutdown", data => {
-      console.log("VOTER: Shutdown signal is: ", { data });
-
       // Changed here
       if (data) {
         this.$router.push({ name: "splashscreen" });
@@ -495,14 +491,18 @@ export default class Home extends Vue {
     this.items_notification.push(message);
     this.not_initiator++;
 
-    this.resetCategories = JSON.parse(JSON.stringify(this.categories.map(item => {
-      item.candidates = item.candidates.map(person => {
-        person.checked = false;
-        return person;
-      })
+    this.resetCategories = JSON.parse(
+      JSON.stringify(
+        this.categories.map(item => {
+          item.candidates = item.candidates.map(person => {
+            person.checked = false;
+            return person;
+          });
 
-      return item;
-    })));
+          return item;
+        })
+      )
+    );
   }
 
   vote() {
@@ -526,10 +526,6 @@ export default class Home extends Vue {
       this.openToast("Please choose at least one candidate");
       return;
     }
-
-    console.log("VOTER: Voter data about to be submitted to MANAGER", {
-      data: voteObject
-    });
 
     this.loadingBtn = true;
 

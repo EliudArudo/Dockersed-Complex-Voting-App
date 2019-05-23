@@ -1,0 +1,34 @@
+Initial Setup
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Initial%20Setup/generic-deployment.yaml
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Initial%20Setup/local-environment-setup.yaml
+
+Other Setups
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Other%20Setups/mongodb-cluster-ip-services.yaml
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Other%20Setups/mongodb-deployment.yaml
+
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Other%20Setups/postgres-cluster-ip-services.yaml
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Other%20Setups/postgres-deployment.yaml
+
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Other%20Setups/redis-cluster-ip-service.yaml
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Other%20Setups/redis-deployment.yaml
+
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Other%20Setups/admin-cluster-ip-service.yaml
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Other%20Setups/admin-deployment.yaml
+
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Other%20Setups/voter-cluster-ip-service.yaml
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Other%20Setups/voter-deployment.yaml
+
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Other%20Setups/results-cluster-ip-service.yaml
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Other%20Setups/results-deployment.yaml
+
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Other%20Setups/worker-deployment.yaml
+
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Other%20Setups/manager-cluster-ip-service.yaml
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Other%20Setups/manager-deployment.yaml
+
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Other%20Setups/wsserver-cluster-ip-service.yaml
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Other%20Setups/wsserver-deployment.yaml
+
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Other%20Setups/ingress-service-with-rewrite.yaml
+https://raw.githubusercontent.com/EliudArudo/Dockersed-Complex-Voting-App/master/k8s/Other%20Setups/ingress-service.yaml
+

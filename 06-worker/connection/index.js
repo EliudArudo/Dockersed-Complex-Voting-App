@@ -44,7 +44,7 @@ const redisPublisher = redisClient.duplicate();
 const redisSubscriber = redisClient.duplicate();
 
 redisClient.on('connect', function () {
-    console.log('WORKER: redis connected');
+    console.log('WORKER: Redis connected');
 }).on('error', function (error) {
     console.log(error);
 });

@@ -104,7 +104,6 @@ export default class LoginPage extends Vue {
     });
 
     socket.on("seed-data", data => {
-      console.log("ADMIN: Got seed data from WS-SERVER", { data });
 
       if (data) {
         this.seed_data = data.data;
@@ -149,11 +148,6 @@ export default class LoginPage extends Vue {
       this.openToast("Passwords should be 6 characters or more");
       return;
     }
-
-    console.log(`ADMIN: About to submit login data to MANAGER`, {
-      email,
-      password
-    });
 
     this.startLoading("Logging you in");
 

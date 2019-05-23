@@ -60,10 +60,7 @@ setTimeout(() => { // Wait for worker full connectivity
 // ----- redisEvents ------ //
 redisSubscriber.on('message', async (channel, message) => {
 
-    console.log('MANAGER: Got message from WORKER', { message: message.slice(0, 100) });
-
     message = JSON.parse(message);
-
 
     try {
 
@@ -94,8 +91,6 @@ redisSubscriber.on('message', async (channel, message) => {
                 }
 
                 seedData[message.room] = message.data;
-
-                console.log("SEED DATA", seedData);
 
                 /// find a way to send data to admin
                 if (message.room === 'admin') {
@@ -204,12 +199,6 @@ app.post('/get-seed-data', (req, res) => { // Might need a direct route
         return;
     }
 
-    console.log(`MANAGER: Requesting seed-data from WS-SERVER ---- '/get-seed-data' route, current 'process.env.VOTING_ACTIVE' value`, {
-        body: req.body,
-        activeStatus: process.env.VOTING_ACTIVE
-    });
-
-
     if (!req.body.noAdmin) {
         // Prevent cyclic redundancy
         redisPublisher.publish('worker', JSON.stringify({ message: 'seed-data', data: { seedData: 'admin' } }));
@@ -259,11 +248,6 @@ app.post('/voter-in', async (req, res) => {
 
     // Checks
 
-    console.log(`MANAGER: Voter in data from VOTER client ---- '/voter-in' route, current 'process.env.VOTING_ACTIVE' value`, {
-        body: req.body,
-        activeStatus: process.env.VOTING_ACTIVE
-    });
-
     if (seedData['voters'].length === 0) {
         res.status(403).send('Voting process stopped');
         return;
@@ -303,13 +287,6 @@ app.post('/admin-login', (req, res) => {
         return;
     }
 
-    console.log(`MANAGER: Admin client trying to login ---- '/admin-login' route, current 'process.env.VOTING_ACTIVE' value`, {
-        body: req.body,
-        activeStatus: process.env.VOTING_ACTIVE,
-        adminEmail: env.ADMIN_EMAIL,
-        asminPassword: env.ADMIN_PASSWORD
-    });
-
     if (!env.ADMIN_EMAIL || !env.ADMIN_PASSWORD) {
         res.status(500).send('Server not yet initialised, contact your DevOps team for more info');
         return;
@@ -340,10 +317,6 @@ app.post('/admin-in', passport.authenticate('jwt', {
         return;
     }
 
-    console.log(`MANAGER: Admin client submitting changes ---- '/admin-in' route, current 'process.env.VOTING_ACTIVE' value`, {
-        body: req.body,
-        activeStatus: process.env.VOTING_ACTIVE
-    });
     // Changed here
     if (!process.env.VOTING_ACTIVE && !req.body.hasOwnProperty('shutdown')) {
         res.status(401).send('Voting Process is on shutdown, please start process to submit data');

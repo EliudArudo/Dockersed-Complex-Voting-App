@@ -208,6 +208,10 @@ $ kubect logs <POD-ID>
 
 # To scale up a deployment
 kubectl scale --replicas=<NUMBER> deployment/<DEPLOYMENT-NAME>
+
+# To remove your cluster, use
+$ kubectl delete -f 'Initial Setup' && kubectl delete -f 'Other Setups'
+
 ```
 
 
